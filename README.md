@@ -1,5 +1,9 @@
 # Road Trip on TikTok
 
+![Road Trip on TikTok](branding/cover.png)
+
+[Логотип PNG](branding/logo.png)
+
 **Minecraft 26.3 · Fabric · Beta 1.0.0-beta.1**
 
 Автономная игра для TikTok LIVE: Стив и Алекс едут на кабриолете к цели **999 999 м**, а зрители помогают или мешают. Машиной управляет мод.
