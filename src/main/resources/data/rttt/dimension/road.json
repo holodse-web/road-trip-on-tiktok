@@ -1,0 +1,37 @@
+{
+  "type": "rttt:road",
+  "generator": {
+    "type": "rttt:road",
+    "biome_source": {
+      "type": "rttt:road_biomes",
+      "biomes": [
+        "minecraft:plains",
+        "minecraft:flower_forest",
+        "minecraft:birch_forest",
+        "minecraft:dappled_forest",
+        "minecraft:taiga",
+        "minecraft:old_growth_spruce_taiga",
+        "minecraft:snowy_taiga",
+        "minecraft:ice_spikes",
+        "minecraft:snowy_plains",
+        "minecraft:windswept_hills",
+        "minecraft:sunflower_plains",
+        "minecraft:savanna",
+        "minecraft:desert",
+        "minecraft:badlands",
+        "minecraft:wooded_badlands",
+        "minecraft:beach",
+        "minecraft:sparse_jungle",
+        "minecraft:jungle",
+        "minecraft:bamboo_jungle",
+        "minecraft:swamp",
+        "minecraft:cherry_grove",
+        "minecraft:meadow",
+        "minecraft:dark_forest",
+        "minecraft:mushroom_fields",
+        "minecraft:pale_garden",
+        "minecraft:forest"
+      ]
+    }
+  }
+}

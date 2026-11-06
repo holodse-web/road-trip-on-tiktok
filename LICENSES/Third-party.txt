@@ -1,0 +1,20 @@
+Road Trip on TikTok — third-party assets and dependencies
+
+Inter Bold font: Copyright (c) 2016 The Inter Project Authors.
+License: SIL Open Font License 1.1; see Inter-OFL.txt.
+Source: https://github.com/rsms/inter
+
+Engine, brake, crash and horn sounds: CC0 assets from pmndrs/racing-game.
+Source and asset policy: https://github.com/pmndrs/racing-game
+
+TikTok gift icons are downloaded separately and are not distributed here.
+Minecraft assets are provided by the installed game, not this mod.
+
+The optional Node.js bridge installs its dependencies separately using npm.
+They are not included in the mod JAR or this repository:
+- tiktok-live-connector 2.5.0: AGPL-3.0-only
+  https://github.com/zerodytrash/TikTok-Live-Connector
+- ws: MIT
+  https://github.com/websockets/ws
+See bridge/package-lock.json and the installed packages for the complete
+dependency list and each package's license.

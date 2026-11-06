@@ -1,0 +1,732 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Road Trip on TikTok — пульт</title>
+<style>
+:root{
+  --page:#141518;--panel:#1d1e22;--panel-2:#25262b;--panel-3:#2c2d33;--line:#2c2d33;--line-2:#3a3c43;
+  --text:#ececef;--muted:#9c9ea8;--faint:#6f717b;
+  --brand:#d7263d;--brand-hi:#e0354b;--brand-lo:#8f1527;
+  --fwd:#4cc46a;--back:#f0544f;--gold:#f2b53a;--info:#6ec6e8;
+  --r:6px;
+  --font:"Segoe UI",system-ui,-apple-system,Roboto,sans-serif;
+}
+*{box-sizing:border-box}
+html{background:var(--page)}
+body{margin:0;color:var(--text);font:14px/1.45 var(--font);min-height:100vh;background:var(--page)}
+h1,h2,h3{font-weight:600}
+button,input,select{font:inherit;color:inherit}
+img.px,.btn img,.tab img,.title img,.mini img,.tile img.px{image-rendering:pixelated}
+
+.top{position:sticky;top:0;z-index:20;background:rgba(20,21,24,.97);border-bottom:1px solid var(--line)}
+.bar{max-width:1280px;margin:0 auto;padding:10px 18px 4px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.title{display:flex;align-items:center;gap:10px;margin-right:auto}
+.title img{width:26px;height:26px}
+.title h1{margin:0;font-size:16px;line-height:1.1}
+.title small{display:block;color:var(--muted);font-size:12px;font-weight:400;margin-top:2px}
+.state{display:flex;gap:6px;flex-wrap:wrap}
+.tag{font-size:12.5px;font-weight:600;padding:4px 10px;border-radius:99px;background:var(--panel);border:1px solid var(--line-2);white-space:nowrap}
+.tag::before{content:"";display:inline-block;width:7px;height:7px;border-radius:50%;background:currentColor;margin-right:6px;vertical-align:1px}
+.tag.live,.tag.on{color:var(--fwd)}.tag.test{color:var(--gold)}.tag.off{color:var(--back)}
+#saved{font-size:12px;color:var(--fwd);opacity:0;transition:opacity .3s;min-width:70px;text-align:right}
+.tabs{max-width:1280px;margin:0 auto;padding:0 10px;display:flex;gap:2px;overflow-x:auto;scrollbar-width:none}
+.tab{flex:none;display:flex;align-items:center;gap:7px;background:none;border:0;border-bottom:2px solid transparent;padding:9px 12px;color:var(--muted);cursor:pointer;font-weight:600}
+.tab img{width:18px;height:18px;opacity:.7}
+.tab:hover{color:var(--text)}
+.tab.on{color:var(--text);border-bottom-color:var(--brand)}
+.tab.on img{opacity:1}
+.tab kbd{font:11px var(--font);color:var(--faint);border:1px solid var(--line-2);border-radius:4px;padding:0 4px}
+
+main{max-width:1280px;margin:0 auto;padding:16px 18px 40px}
+.page{display:none}.page.on{display:block}
+.cols{display:grid;grid-template-columns:repeat(12,1fr);gap:14px;align-items:start}
+.s12{grid-column:span 12}.s8{grid-column:span 8}.s7{grid-column:span 7}.s6{grid-column:span 6}.s5{grid-column:span 5}.s4{grid-column:span 4}
+@media(max-width:980px){.s8,.s7,.s6,.s5,.s4{grid-column:span 12}}
+.stack{display:grid;gap:14px;min-width:0}
+.box{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:16px 18px;min-width:0}
+.box>h2,.hd h2{margin:0 0 12px;font-size:12.5px;letter-spacing:.5px;text-transform:uppercase;color:var(--muted)}
+.hd{display:flex;align-items:baseline;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.hd h2{margin-bottom:12px}
+.sub{color:var(--muted);font-size:12.5px;margin:0 0 12px}
+.sep{height:1px;background:var(--line);margin:14px 0}
+.muted{color:var(--muted)}.small{font-size:12px}
+.gold{color:var(--gold)}.green{color:var(--fwd)}.red{color:var(--back)}.aqua{color:var(--info)}
+.pos{color:var(--fwd)!important}.neg{color:var(--back)!important}
+
+.dist{font-weight:700;font-size:clamp(36px,6vw,58px);line-height:1;font-variant-numeric:tabular-nums;letter-spacing:-.5px}
+.dist.neg{color:var(--back)}
+.xp{margin:14px 0 6px;height:8px;background:var(--panel-3);border-radius:99px;overflow:hidden}
+.xp i{display:block;height:100%;width:0;background:var(--fwd);transition:width .6s ease}
+.goal{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
+.minis{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:14px}
+.mini{background:var(--panel-2);border-radius:var(--r);padding:8px 10px;display:flex;gap:9px;align-items:center;min-width:0}
+.mini img{width:22px;height:22px;flex:none}
+.mini b{display:block;font-size:18px;line-height:1.1;font-variant-numeric:tabular-nums}
+.mini span{color:var(--muted);font-size:11.5px}
+
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.row+.row{margin-top:8px}
+.grow{flex:1;min-width:160px}
+.fields{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px}
+.f{display:flex;flex-direction:column;gap:5px;min-width:0}
+.f>span{font-size:12px;color:var(--muted)}
+input,select{background:var(--page);border:1px solid var(--line-2);border-radius:var(--r);padding:7px 10px;min-width:0;outline:none;transition:border-color .15s}
+input:focus,select:focus{border-color:var(--brand)}
+input[type=number]{width:110px;font-variant-numeric:tabular-nums}
+.fields input,.fields select{width:100%}
+input[type=color]{padding:2px;width:44px;height:34px;cursor:pointer}
+input[type=checkbox],input[type=range]{accent-color:var(--brand)}
+input[type=range]{padding:0;border:0;background:none;width:100%;height:20px;cursor:pointer}
+
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;background:var(--panel-2);border:1px solid var(--line-2);border-bottom:3px solid #111214;border-radius:var(--r);
+  padding:7px 13px 6px;cursor:pointer;font-weight:600;line-height:1.2;transition:background .12s,border-color .12s;white-space:nowrap}
+.btn img{width:18px;height:18px}
+.btn:hover{background:var(--panel-3);border-color:#4a4c55;border-bottom-color:#111214}
+.btn:active{transform:translateY(1px);border-bottom-width:2px;margin-top:1px}
+.btn.brand{background:var(--brand);border-color:var(--brand);border-bottom-color:var(--brand-lo);color:#fff}
+.btn.brand:hover{background:var(--brand-hi)}
+.btn.go{background:#28783e;border-color:#28783e;border-bottom-color:#1a5229;color:#fff}
+.btn.go:hover{background:#2e8a47}
+.btn.warn{background:#3a3020;border-color:#5a4a28;border-bottom-color:#211b10;color:var(--gold)}
+.btn.dim{background:transparent}
+.btn.sm{font-size:12.5px;padding:4px 9px 3px}
+.btn.lg{padding:10px 18px 9px;font-size:15px}
+.btn.ico{padding:5px 8px 4px}
+.btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
+.seg{display:inline-flex;gap:4px;flex-wrap:wrap}
+.seg .btn.on{background:var(--text);color:var(--page);border-color:var(--text);border-bottom-color:#8d8f99}
+
+.tg{display:inline-flex;align-items:center;gap:10px;cursor:pointer;user-select:none}
+.tg input{appearance:none;-webkit-appearance:none;width:36px;height:21px;border-radius:99px;background:var(--line-2);border:0;position:relative;cursor:pointer;padding:0;flex:none;transition:background .15s}
+.tg input::after{content:"";position:absolute;top:3px;left:3px;width:15px;height:15px;border-radius:50%;background:#fff;transition:left .15s}
+.tg input:checked{background:var(--brand)}
+.tg input:checked::after{left:18px}
+.opt{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:9px 0;border-bottom:1px solid var(--line)}
+.opt:last-child{border-bottom:0}
+.opt .lbl{display:flex;flex-direction:column;min-width:0}
+.opt .lbl small{color:var(--muted);font-size:12px}
+
+.sl{display:grid;grid-template-columns:150px 1fr 58px;align-items:center;gap:12px;margin:8px 0}
+.sl label{color:var(--muted);font-size:13px}
+.sl output{text-align:right;font-variant-numeric:tabular-nums;font-size:13px}
+@media(max-width:560px){.sl{grid-template-columns:100px 1fr 50px}}
+
+.conn[hidden]{display:none}
+.conn{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:var(--r);background:var(--panel-2);margin-bottom:12px}
+.dot{width:10px;height:10px;border-radius:50%;background:var(--faint);flex:none}
+.dot.ok{background:var(--fwd);box-shadow:0 0 0 3px rgba(76,196,106,.18)}
+.dot.wait{background:var(--gold)}
+.dot.bad{background:var(--back)}
+.conn b{display:block;font-size:14px}
+.conn span{color:var(--muted);font-size:12px;overflow-wrap:anywhere}
+
+.feed{height:240px;overflow:auto;background:var(--page);border:1px solid var(--line);border-radius:var(--r);padding:8px 10px;font:12.5px/1.6 Consolas,ui-monospace,monospace;white-space:pre-wrap;color:#d6d7dc}
+.feed.tall{height:520px}
+
+.tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(104px,1fr));gap:8px}
+.tile{display:flex;flex-direction:column;align-items:center;gap:4px;background:var(--panel-2);border:1px solid var(--line-2);border-bottom:3px solid #111214;border-radius:var(--r);padding:8px 6px 6px;cursor:pointer;min-width:0;text-align:center}
+.tile:hover{background:var(--panel-3);border-color:#4a4c55}
+.tile:active{transform:translateY(1px)}
+.tile img{width:40px;height:40px;object-fit:contain}
+.tile img.px{width:32px;height:32px;margin:4px 0}
+.tile b{font-size:12.5px;line-height:1.2;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tile span{font-size:11.5px;font-variant-numeric:tabular-nums}
+.tile.help{box-shadow:inset 0 -2px 0 rgba(76,196,106,.5)}
+.tile.hurt{box-shadow:inset 0 -2px 0 rgba(240,84,79,.45)}
+.tiles.scroll{max-height:330px;overflow:auto;padding-right:2px}
+
+.pad{display:grid;grid-template-columns:repeat(3,38px);grid-template-rows:repeat(3,34px);gap:4px}
+.pad .btn{padding:0}
+.pad .c{grid-column:2;grid-row:2}
+
+.tbl{overflow:auto;border:1px solid var(--line);border-radius:8px}
+table{width:100%;border-collapse:collapse}
+th,td{padding:7px 10px;text-align:left;vertical-align:middle;border-bottom:1px solid var(--line)}
+tr:last-child td{border-bottom:0}
+th{position:sticky;top:0;background:var(--panel-2);color:var(--muted);font-weight:600;font-size:12px;z-index:1}
+td input[type=number]{width:96px}
+.icon-slot{width:34px;height:34px;display:grid;place-items:center}
+.icon-slot img{width:30px;height:30px;object-fit:contain}
+.icon-slot img.px{width:26px;height:26px}
+.role{font-size:12.5px;font-weight:600}
+.mobs{max-height:600px}
+.gifts-tbl{max-height:620px}
+.filter{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
+.filter input{flex:1;min-width:200px}
+code{background:var(--page);border:1px solid var(--line);border-radius:4px;color:var(--info);padding:1px 6px;font-size:12px;overflow-wrap:anywhere}
+.how{display:grid;gap:8px}
+.how div{background:var(--panel-2);border-radius:var(--r);padding:10px 12px;color:var(--muted);font-size:12.5px;overflow-wrap:anywhere}
+.how b{color:var(--text)}
+.unknown div{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--line)}
+details summary{cursor:pointer;color:var(--muted);font-size:13px;margin-top:4px}
+.toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%) translateY(8px);background:var(--panel-3);border:1px solid var(--line-2);color:var(--text);padding:8px 14px;
+  border-radius:var(--r);opacity:0;transition:.2s;pointer-events:none;z-index:50;font-weight:600}
+.toast.on{opacity:1;transform:translateX(-50%)}
+#panel-error{max-width:1244px;margin:12px auto 0;padding:10px 14px;color:#ffb7b4;background:#382326;border:1px solid #674044;border-radius:6px;display:flex;gap:10px;align-items:center}
+#panel-error[hidden]{display:none}
+#panel-error span{flex:1}
+:focus-visible{outline:2px solid var(--info);outline-offset:3px}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{transition:none!important}}
+@media(max-width:560px){main{padding:10px}.minis{grid-template-columns:repeat(3,1fr)}.tab span{display:none}.tab kbd{display:none}}
+</style>
+</head>
+<body>
+<div class="top">
+  <div class="bar">
+    <div class="title"><img src="/mc/item/minecart.png" alt=""><div><h1>Road Trip on TikTok</h1><small>пульт стрима</small></div></div>
+    <div class="state"><span class="tag" id="mode">…</span><span class="tag" id="game">…</span></div>
+    <span id="saved">сохранено</span>
+  </div>
+  <nav class="tabs" id="tabs">
+    <button class="tab" data-tab="home"><img src="/mc/item/compass_00.png" alt=""><span>Эфир</span><kbd>1</kbd></button>
+    <button class="tab" data-tab="test"><img src="/mc/item/command_block_minecart.png" alt="" onerror="this.src='/mc/item/redstone_torch.png'"><span>Тест</span><kbd>2</kbd></button>
+    <button class="tab" data-tab="gifts"><img src="/mc/item/emerald.png" alt=""><span>Подарки</span><kbd>3</kbd></button>
+    <button class="tab" data-tab="mobs"><img src="/mc/item/zombie_spawn_egg.png" alt=""><span>Мобы</span><kbd>4</kbd></button>
+    <button class="tab" data-tab="settings"><img src="/mc/item/redstone.png" alt=""><span>Настройки</span><kbd>5</kbd></button>
+    <button class="tab" data-tab="log"><img src="/mc/item/writable_book.png" alt=""><span>Журнал</span><kbd>6</kbd></button>
+  </nav>
+</div>
+<div id="panel-error" role="alert" hidden><span id="panel-error-text"></span><button class="btn sm dim" onclick="$('panel-error').hidden=true">Скрыть</button></div>
+<main>
+
+<!-- ЭФИР -->
+<section class="page" id="p-home">
+  <div class="cols">
+    <div class="stack s7">
+      <div class="box">
+        <h2>Заезд</h2>
+        <div class="dist" id="dist">—</div>
+        <div class="xp"><i id="bar"></i></div>
+        <div class="goal"><span id="pct">0%</span><span>цель <span id="goal">999 999</span> м</span></div>
+        <div class="minis">
+          <div class="mini"><img src="/mc/item/totem_of_undying.png" alt=""><div><b class="gold" id="wins">0</b><span>победы</span></div></div>
+          <div class="mini"><img src="/mc/item/map.png" alt=""><div><b id="runs">0</b><span>заезды</span></div></div>
+          <div class="mini"><img src="/mc/item/sugar.png" alt=""><div><b id="speed">0</b><span>блоков/с</span></div></div>
+        </div>
+        <div class="row" style="margin-top:14px">
+          <button class="btn go lg" onclick="act('start')"><img src="/mc/item/minecart.png" alt="">Старт</button>
+          <button class="btn lg" onclick="act('stop')"><img src="/mc/item/barrier.png" alt="">Стоп</button>
+          <button class="btn brand lg" onclick="if(confirm('Начать новый заезд с нуля?'))act('restart')"><img src="/mc/item/clock_00.png" alt="">Новый заезд</button>
+        </div>
+      </div>
+
+      <div class="box">
+        <div class="hd"><h2>Что происходит</h2><button class="btn sm dim" onclick="tab('log')">Весь журнал</button></div>
+        <div class="minis" style="margin:0 0 10px">
+          <div class="mini"><img src="/mc/item/emerald.png" alt=""><div><b id="qg">0</b><span>подарков в очереди</span></div></div>
+          <div class="mini"><img src="/mc/item/zombie_spawn_egg.png" alt=""><div><b id="qm">0</b><span>мобов в очереди</span></div></div>
+          <div class="mini"><img id="wicon" src="/mc/item/glowstone_dust.png" alt=""><div><b id="weather">—</b><span>погода</span></div></div>
+        </div>
+        <div class="feed" id="feed"></div>
+      </div>
+    </div>
+
+    <div class="stack s5">
+      <div class="box">
+        <h2>TikTok LIVE</h2>
+        <div class="conn"><i class="dot" id="conn-dot"></i><div style="min-width:0"><b id="conn-title">Нет подключения</b><span id="livestatus"></span></div></div>
+        <label class="f"><span>Ваш ник в TikTok</span><input id="bridge-user" data-k="liveUsername" placeholder="ник без @" autocomplete="off" spellcheck="false" maxlength="64" onkeydown="if(event.key==='Enter')startBridge()"></label>
+        <div class="row" style="margin-top:10px">
+          <button id="bridge-start" class="btn go" onclick="startBridge()"><img src="/mc/item/ender_eye.png" alt="">Подключить</button>
+          <button id="bridge-stop" class="btn dim" onclick="stopBridge()" disabled>Отключить</button>
+        </div>
+        <p class="small muted" id="bridge-status" role="status" style="margin:10px 0 0">Мост не запущен.</p>
+        <p class="sub" style="margin:8px 0 0">Эфир в TikTok должен уже идти. Нужен Node.js. TikFinity и другие способы — в «Настройки → Подключение».</p>
+      </div>
+
+      <div class="box">
+        <h2>Во время эфира</h2>
+        <div class="conn" id="demo-warn" hidden style="background:#382326"><i class="dot bad"></i><div class="grow" style="min-width:0"><b>Включён демо-режим</b><span>Игра сама шлёт фейковые подарки от «demo_…» — зрители это видят.</span></div><button class="btn sm" onclick="cfg.demoMode=false;syncKey('demoMode');save();syncDemo()">Выключить</button></div>
+        <div class="opt"><div class="lbl">Подсказки на экране<small>«Пиши имя моба», «Подарки двигают машину»</small></div><label class="tg"><input type="checkbox" id="info-quick" aria-label="Подсказки на экране"></label></div>
+        <div class="opt"><div class="lbl">Время суток<small id="time-status" role="status"></small></div>
+          <div class="seg" id="time-modes" role="group" aria-label="Время суток">
+            <button class="btn sm" data-time="DAY" aria-pressed="false" onclick="setTimeOfDay('DAY')">День</button>
+            <button class="btn sm" data-time="NIGHT" aria-pressed="false" onclick="setTimeOfDay('NIGHT')">Ночь</button>
+            <button class="btn sm" data-time="AUTO" aria-pressed="false" onclick="setTimeOfDay('AUTO')">Авто</button>
+          </div></div>
+        <div class="opt"><div class="lbl">Погода</div>
+          <div class="seg">
+            <button class="btn sm" onclick="act('weather',{value:'CLEAR'})">Ясно</button>
+            <button class="btn sm" onclick="act('weather',{value:'RAIN'})">Дождь</button>
+            <button class="btn sm" onclick="act('weather',{value:'THUNDER'})">Гроза</button>
+          </div></div>
+        <div class="sl" style="margin-top:12px"><label for="vol-master">Громкость</label><input type="range" min="0" max="1" step="0.05" id="vol-master" data-k="volMaster"><output data-for="volMaster" data-fmt="pct"></output></div>
+      </div>
+
+      <div class="box">
+        <div class="hd"><h2>Помогли больше всех</h2><button class="btn sm dim" onclick="if(confirm('Сбросить топ помощников?'))act('resetTop')">Сбросить</button></div>
+        <div id="top-list" class="small muted">Пока никого — топ появится после первых подарков.</div>
+        <p class="sub" id="quiet-status" style="margin:10px 0 0"></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ТЕСТ -->
+<section class="page" id="p-test">
+  <div class="cols">
+    <div class="stack s7">
+      <div class="box">
+        <div class="hd"><h2>Подарки — нажмите, чтобы отправить</h2>
+          <div class="row"><label class="small muted" for="tgcount">Штук</label><input id="tgcount" type="number" value="1" min="1" max="999" style="width:70px"></div></div>
+        <div class="tiles scroll" id="gift-tiles"></div>
+        <div class="sep"></div>
+        <div class="row">
+          <span class="small muted">Подарок не из таблицы, цена</span>
+          <input id="tprice" type="number" value="10" min="1" style="width:90px">
+          <button class="btn sm" onclick="sendUnknownGift()">Отправить</button>
+        </div>
+      </div>
+      <div class="box">
+        <div class="hd"><h2>Мобы</h2><input id="tmobq" placeholder="поиск: крипер, cow…" style="width:220px" oninput="renderMobTiles()"></div>
+        <div class="tiles scroll" id="mob-tiles"></div>
+        <div class="row" style="margin-top:10px"><button class="btn sm" onclick="randomMob()"><img src="/mc/item/ender_pearl.png" alt="">Случайный моб</button>
+          <button class="btn sm" onclick="testHorde()"><img src="/mc/item/zombie_head.png" alt="" onerror="this.remove()">Тест орды</button></div>
+      </div>
+    </div>
+    <div class="stack s5">
+      <div class="box">
+        <h2>От имени зрителя</h2>
+        <label class="f"><span>Ник</span><input id="tuser" value="тестер"></label>
+        <div class="opt" style="margin-top:8px"><div class="lbl">Демо-режим<small>Случайные подарки, мобы и лайки от «demo_…» каждые 2–6 с. Не включайте в эфире.</small></div><label class="tg"><input type="checkbox" data-k="demoMode" aria-label="Демо-режим"></label></div>
+      </div>
+      <div class="box">
+        <h2>Лайки и подписки</h2>
+        <div class="row">
+          <button class="btn" onclick="test({type:'like',count:100})"><img src="/mc/item/apple.png" alt="">+100 лайков</button>
+          <button class="btn" onclick="test({type:'like',count:500})"><img src="/mc/item/golden_apple.png" alt="">+500</button>
+        </div>
+        <div class="row">
+          <button class="btn" onclick="test({type:'follow'})"><img src="/mc/item/lime_dye.png" alt="">Подписка</button>
+          <button class="btn" onclick="test({type:'subscribe'})"><img src="/mc/item/magenta_dye.png" alt="">Платная</button>
+          <button class="btn" onclick="test({type:'share'})"><img src="/mc/item/paper.png" alt="">Репост</button>
+        </div>
+      </div>
+      <div class="box">
+        <h2>Чат</h2>
+        <div class="row"><input id="tchat" class="grow" placeholder="например «крипер»" onkeydown="if(event.key==='Enter')sendChat()"><button class="btn" onclick="sendChat()">Отправить</button></div>
+      </div>
+      <div class="box">
+        <h2>Большие события</h2>
+        <div class="row">
+          <button class="btn warn" onclick="test({type:'ultraPlus'})"><img src="/mc/item/nether_star.png" alt="">Ультра +</button>
+          <button class="btn brand" onclick="test({type:'ultraMinus'})"><img src="/mc/item/fire_charge.png" alt="">Ультра −</button>
+          <button class="btn" onclick="test({type:'victory'})"><img src="/mc/item/firework_rocket.png" alt="">Победа</button>
+        </div>
+        <div class="row">
+          <input id="tmeters" type="number" value="500" style="width:110px">
+          <button class="btn dim" onclick="test({type:'meters',count:+val('tmeters')})">± метры</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ПОДАРКИ -->
+<section class="page" id="p-gifts">
+  <div class="cols">
+    <div class="box s12">
+      <div class="hd"><h2>Таблица подарков</h2>
+        <div class="row"><input id="giftq" placeholder="поиск" style="width:200px" oninput="renderGifts()"><button class="btn sm" onclick="addGift()">+ Добавить</button><button class="btn dim sm" onclick="sortGifts()">По цене</button></div></div>
+      <p class="sub">Плюс толкает машину вперёд, от 2 000 м — нитро. Минус отбрасывает назад, от 10 000 м — с кувырком. Подарок не из таблицы работает как подарок той же цены.</p>
+      <div class="tbl gifts-tbl"><table><thead><tr><th></th><th>Название в TikTok</th><th>По-русски</th><th>Цена 💎</th><th>Метры</th><th>Эффект</th><th>В подсказках</th><th></th></tr></thead><tbody id="gifts"></tbody></table></div>
+    </div>
+    <div class="box s4">
+      <h2>Очередь подарков</h2>
+      <div class="opt"><div class="lbl">Очередь с приоритетом<small>Дорогие первыми, дешёвые склеиваются</small></div><label class="tg"><input type="checkbox" data-k="giftQueue"></label></div>
+      <div class="fields" style="margin-top:10px">
+        <label class="f"><span>Время на подарок, ×</span><input type="number" step="0.1" data-k="giftSpotlightScale"></label>
+        <label class="f"><span>Пауза между, с</span><input type="number" min="0" max="30" step="0.1" data-k="giftCooldownSeconds"></label>
+        <label class="f"><span>Максимум в очереди</span><input type="number" data-k="maxQueuedGifts"></label>
+      </div>
+    </div>
+    <div class="box s4">
+      <h2>Лайки и подписки</h2>
+      <div class="fields">
+        <label class="f"><span>Каждые N лайков</span><input type="number" data-k="likesPerTrigger" min="1"></label>
+        <label class="f"><span>дают метров</span><input type="number" data-k="metersPerLikeTrigger"></label>
+      </div>
+      <div class="sep"></div>
+      <div class="opt"><div class="lbl">Подписка — новый цвет машины</div><label class="tg"><input type="checkbox" data-k="colorOnFollow"></label></div>
+      <div class="opt"><div class="lbl">Платная подписка — тоже</div><label class="tg"><input type="checkbox" data-k="colorOnSubscribe"></label></div>
+      <div class="opt"><div class="lbl">Репост — тоже</div><label class="tg"><input type="checkbox" data-k="colorOnShare"></label></div>
+      <div class="row" style="margin-top:8px"><input type="number" data-k="colorCooldownSeconds" style="width:80px"><span class="muted small">с между сменами цвета</span></div>
+    </div>
+    <div class="box s4">
+      <h2>Ультраподарки</h2>
+      <div class="fields">
+        <label class="f"><span>Плюс (через запятую)</span><input data-k="ultraPlusGift"></label>
+        <label class="f"><span>Минус (через запятую)</span><input data-k="ultraMinusGift"></label>
+        <label class="f"><span>Величина, м</span><input type="number" data-k="ultraAmount"></label>
+      </div>
+      <div class="sep"></div>
+      <div class="opt"><div class="lbl">Неизвестные — по цене</div><label class="tg"><input type="checkbox" data-k="unknownGiftFallback"></label></div>
+      <div class="small muted unknown" id="unknown">—</div>
+    </div>
+  </div>
+</section>
+
+<!-- МОБЫ -->
+<section class="page" id="p-mobs">
+  <div class="cols">
+    <div class="box s12">
+      <h2>Ограничения</h2>
+      <div class="fields">
+        <label class="f"><span>Пауза зрителя, с</span><input type="number" data-k="chatCooldownSeconds"></label>
+        <label class="f"><span>Пауза сильных мобов, с</span><input type="number" data-k="strongMobCooldownSeconds" min="0" max="300" step="1"></label>
+        <label class="f"><span>Мобов в очереди от одного</span><input type="number" data-k="maxPendingPerViewer"></label>
+        <label class="f"><span>Мобов на экране</span><input type="number" data-k="maxActiveMobs"></label>
+        <label class="f"><span>Очередь всего</span><input type="number" data-k="maxQueuedMobs"></label>
+        <label class="f"><span>Множитель потерь</span><input type="number" step="0.1" data-k="mobPenaltyMultiplier"></label>
+      </div>
+      <div class="opt" style="margin-top:8px"><div class="lbl">Искать моба внутри сообщения<small>«давай крипера» тоже сработает</small></div><label class="tg"><input type="checkbox" data-k="chatMatchInsideMessage"></label></div>
+    </div>
+    <div class="box s12">
+      <div class="hd"><h2>Мобы <span class="muted small" id="mobcount"></span></h2></div>
+      <div class="filter">
+        <input id="mobsearch" placeholder="поиск: корова, cow, крипер…" oninput="renderMobs()">
+        <div class="seg" id="mobfilter"><button class="btn sm" data-f="all">Все</button><button class="btn sm" data-f="help">Помогают</button><button class="btn sm" data-f="hurt">Мешают</button></div>
+      </div>
+      <div class="tbl mobs"><table><thead><tr><th></th><th>Вкл</th><th>Моб</th><th>Роль</th><th>Метры</th><th>Сила</th><th>Как писать в чат</th><th></th></tr></thead><tbody id="mobs"></tbody></table></div>
+    </div>
+  </div>
+</section>
+
+<!-- НАСТРОЙКИ -->
+<section class="page" id="p-settings">
+  <div class="cols">
+    <div class="stack s6">
+      <div class="box">
+        <h2>Камера</h2>
+        <div class="sl"><label>Расстояние</label><input type="range" min="6" max="30" step="0.5" data-k="cameraDistance"><output data-for="cameraDistance"></output></div>
+        <div class="sl"><label>Ширина кадра</label><input type="range" min="14" max="60" step="0.5" data-k="viewWidth"><output data-for="viewWidth"></output></div>
+        <div class="sl"><label>Высота</label><input type="range" min="-6" max="10" step="0.5" data-k="cameraHeight"><output data-for="cameraHeight" data-fmt="signed"></output></div>
+      </div>
+      <div class="box">
+        <h2>Машина</h2>
+        <div class="row"><input type="color" id="carcolor" aria-label="Цвет машины"><div class="seg" id="swatches"></div></div>
+      </div>
+      <div class="box">
+        <h2>Счётчики сверху экрана</h2>
+        <p class="sub">Метры, победы и лайки двигаются одним блоком.</p>
+        <div class="row" style="align-items:flex-start;gap:18px">
+          <div class="pad">
+            <button class="btn" style="grid-column:2;grid-row:1" onclick="moveHud(0,-1)" aria-label="Вверх">▲</button>
+            <button class="btn" style="grid-column:1;grid-row:2" onclick="moveHud(-1,0)" aria-label="Влево">◀</button>
+            <button class="btn c sm" onclick="resetHud()" title="Сбросить">⟲</button>
+            <button class="btn" style="grid-column:3;grid-row:2" onclick="moveHud(1,0)" aria-label="Вправо">▶</button>
+            <button class="btn" style="grid-column:2;grid-row:3" onclick="moveHud(0,1)" aria-label="Вниз">▼</button>
+          </div>
+          <div class="grow">
+            <div class="sl"><label>Размер</label><input type="range" min="0.5" max="2" step="0.05" data-k="hudScale"><output data-for="hudScale" data-fmt="x"></output></div>
+            <p class="small muted" style="margin:6px 0 0">Сдвиг: <span id="hudpos">0 / 0</span> %</p>
+          </div>
+        </div>
+      </div>
+      <div class="box">
+        <h2>Подсказки на экране</h2>
+        <div class="opt"><div class="lbl">Показывать подсказки</div><label class="tg"><input type="checkbox" data-k="showInfoCard"></label></div>
+        <div class="row" style="margin-top:8px"><input type="number" data-k="infoCardPauseSeconds" style="width:80px"><span class="muted small">с пауза между показами</span></div>
+      </div>
+    </div>
+
+    <div class="stack s6">
+      <div class="box">
+        <h2>Ведущий и зрители</h2>
+        <div class="opt"><div class="lbl">Стив и Алекс комментируют<small>Облачка с репликами: благодарят, пугаются, радуются</small></div><label class="tg"><input type="checkbox" data-k="hostEnabled"></label></div>
+        <div class="opt"><div class="lbl">Топ-3 помощников на экране<small>Кто дал больше всего метров за эфир</small></div><label class="tg"><input type="checkbox" data-k="topHelpersEnabled"></label></div>
+        <div class="sep"></div>
+        <div class="opt"><div class="lbl">Командные мобы (орда)<small>Несколько зрителей пишут одного моба — выходит орда</small></div><label class="tg"><input type="checkbox" data-k="hordeEnabled"></label></div>
+        <div class="fields" style="margin-top:8px">
+          <label class="f"><span>Сколько зрителей</span><input type="number" min="2" max="50" data-k="hordeViewers"></label>
+          <label class="f"><span>За сколько секунд</span><input type="number" min="3" max="120" data-k="hordeWindowSeconds"></label>
+          <label class="f"><span>Мобов в орде</span><input type="number" min="2" max="6" data-k="hordeSize"></label>
+        </div>
+        <div class="sep"></div>
+        <div class="opt"><div class="lbl">Тихий чат<small>Если долго тихо: вопросы зрителям, погода, мирные мобы. Без фейковых подарков</small></div><label class="tg"><input type="checkbox" data-k="quietChat"></label></div>
+        <div class="fields" style="margin-top:8px">
+          <label class="f"><span>Тихо дольше, с</span><input type="number" min="30" max="3600" data-k="quietSeconds"></label>
+          <label class="f"><span>Повторять каждые, с</span><input type="number" min="20" max="3600" data-k="quietIntervalSeconds"></label>
+        </div>
+        <div class="opt" style="margin-top:6px"><div class="lbl">Мирные мобы сами приходят</div><label class="tg"><input type="checkbox" data-k="quietAmbientMobs"></label></div>
+      </div>
+      <div class="box">
+        <h2>Окно для эфира</h2>
+        <div class="row"><button class="btn brand" onclick="win(1080,1920)">9:16 · вписать в монитор</button></div>
+        <div class="row">
+          <button class="btn sm" onclick="win(1080,1920,false)">1080×1920</button>
+          <button class="btn sm" onclick="win(720,1280)">720×1280</button>
+          <button class="btn sm" onclick="win(1920,1080)">16:9</button>
+        </div>
+        <p class="small aqua" id="capture-status" role="status" style="margin:10px 0 0">Размер захвата появится после подключения к игре.</p>
+        <details><summary>Как настроить захват</summary>
+          <p class="sub" style="margin:8px 0 0">В OBS или Live Studio: вертикальный холст 1080×1920, «Захват игры» Minecraft, вписать источник в холст. «1080×1920» может выйти за монитор — поэтому захват игры, а не экрана. Клавиши: F6 старт/стоп · F7 пульт · F8 окно 9:16.</p>
+        </details>
+      </div>
+      <div class="box">
+        <h2>Громкость</h2>
+        <div id="vols"></div>
+      </div>
+      <div class="box">
+        <h2>Заезд</h2>
+        <div class="fields">
+          <label class="f"><span>Цель, м</span><input type="number" data-k="goal"></label>
+          <label class="f"><span>Метров за блок</span><input type="number" step="0.1" data-k="metersPerBlock"></label>
+          <label class="f"><span>Скорость, блоков/с</span><input type="number" step="0.5" data-k="cruiseSpeed"></label>
+          <label class="f"><span>Длина суток, мин</span><input type="number" data-k="dayLengthMinutes"></label>
+        </div>
+        <div class="opt" style="margin-top:8px"><div class="lbl">Смена погоды</div><label class="tg"><input type="checkbox" data-k="autoWeather"></label></div>
+        <div class="sep"></div>
+        <button class="btn dim sm" onclick="if(confirm('Сбросить победы и статистику?'))act('resetStats')"><img src="/mc/item/tnt_minecart.png" alt="">Сбросить победы и статистику</button>
+      </div>
+      <div class="box">
+        <h2>Подключение</h2>
+        <div class="opt"><div class="lbl">Принимать события TikTok<small>Выключено — тестовый режим</small></div><label class="tg"><input type="checkbox" data-k="liveEnabled"></label></div>
+        <label class="f" style="margin-top:8px"><span>WebSocket (TikFinity или мост)</span><input data-k="liveWsUrl"></label>
+        <div class="row" style="margin-top:10px"><button class="btn sm" onclick="act('reconnect')">Переподключиться</button></div>
+        <details><summary>Другие способы подключения</summary>
+          <div class="how" style="margin-top:8px">
+            <div><b>TikFinity.</b> Подключите свой LIVE в TikFinity — игра сама подключится к <code>ws://127.0.0.1:21213/</code>. Встроенный мост при этом не запускайте.</div>
+            <div><b>Мост вручную.</b> <code>bridge/start-bridge.bat</code> — то же, что кнопка «Подключить».</div>
+            <div><b>HTTP.</b> Streamer.bot и другие программы:<br><code>/api/event?type=gift&amp;user=ник&amp;name=Rose&amp;count=1</code><br><code>/api/event?type=chat&amp;user=ник&amp;text=зомби</code></div>
+          </div>
+        </details>
+      </div>
+      <div class="box">
+        <h2>Запуск</h2>
+        <div class="opt"><div class="lbl">Автостарт в мирах со словами</div><label class="tg"><input type="checkbox" data-k="autoStart"></label></div>
+        <input data-k="autoStartWorldMatch" style="width:100%;margin-top:6px">
+        <div class="fields" style="margin-top:12px"><label class="f"><span>Порт пульта (нужен перезапуск игры)</span><input type="number" data-k="panelPort"></label></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ЖУРНАЛ -->
+<section class="page" id="p-log">
+  <div class="cols">
+    <div class="box s7"><h2>Игра</h2><div class="feed tall" id="log"></div></div>
+    <div class="box s5"><h2>Мост TikTok</h2><div class="feed tall" id="bridge-log">Здесь появятся сообщения моста.</div></div>
+  </div>
+</section>
+</main>
+<div class="toast" id="toast" role="status"></div>
+<script>
+let cfg=null, meta=null, saveTimer=null, mobFilter='all', saveVersion=0, savedVersion=0, saveFlight=null, bridgePending=false, infoPending=false, timePending=false, lastStatus=null;
+const $=id=>document.getElementById(id);
+const val=id=>$(id).value;
+const fmt=n=>(n<0?'−':'')+Math.abs(Math.round(n)).toString().replace(/\B(?=(\d{3})+(?!\d))/g,' ');
+const store={get(k){try{return localStorage.getItem(k)}catch(e){return null}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}}};
+function toast(t){const e=$('toast');e.textContent=t;e.classList.add('on');clearTimeout(e._t);e._t=setTimeout(()=>e.classList.remove('on'),1400);}
+function showError(e){$('panel-error-text').textContent=e?.message||String(e);$('panel-error').hidden=false;}
+function clearError(){$('panel-error').hidden=true;}
+async function api(path,body){
+  const r=await fetch(path,{...(body===undefined?{}:{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}),signal:AbortSignal.timeout(10000)});
+  if(!r.ok){const detail=(await r.text()).slice(0,240);throw new Error('Ошибка '+r.status+': '+detail);}
+  const result=await r.json();if(result.ok===false)throw new Error(result.error||result.message||'Не удалось выполнить действие');return result;
+}
+const ACT={start:'Игра запущена',stop:'Игра остановлена',restart:'Новый заезд',resetStats:'Статистика сброшена',reconnect:'Переподключение',weather:'Погода изменена',window:'Размер окна изменён'};
+async function act(action,extra){try{await api('/api/action',Object.assign({action},extra||{}));toast(ACT[action]||'Готово');clearError();}catch(e){showError(e);}}
+function win(w,h,fitDisplay=true){act('window',{w,h,fitDisplay});}
+async function test(e){e.user=val('tuser')||'тестер';try{await api('/api/test',e);toast('Отправлено');}catch(err){showError(err);}}
+function sendGift(name){test({type:'gift',name,count:Math.max(1,+val('tgcount')||1)});}
+function sendUnknownGift(){test({type:'gift',name:'Неизвестный подарок',count:Math.max(1,+val('tgcount')||1),diamonds:+val('tprice')||1});}
+function sendChat(){const t=val('tchat').trim();if(t){test({type:'chat',text:t});}}
+async function testHorde(){
+  const q=(val('tmobq')||'').trim();const m=(q&&meta.mobs.find(x=>mobMatches(x,q.toLowerCase())))||meta.mobs.find(x=>x.id==='zombie')||meta.mobs[0];
+  const n=Math.max(2,cfg.hordeViewers||5);
+  try{for(let i=0;i<n;i++)await api('/api/test',{type:'chat',text:m.ru,user:'зритель'+(i+1)});toast('Орда: '+n+' × «'+m.ru+'»');}catch(e){showError(e);}
+}
+function randomMob(){const list=meta.mobs.filter(m=>cfg.mobs[m.id]?.enabled!==false);const m=list[Math.floor(Math.random()*list.length)];if(m)test({type:'mob',name:m.id});}
+
+function save(){saveVersion++;clearTimeout(saveTimer);saveTimer=setTimeout(()=>flushSave().catch(showError),300);}
+async function flushSave(){
+  clearTimeout(saveTimer);if(saveFlight)return saveFlight;
+  saveFlight=(async()=>{while(savedVersion<saveVersion){const version=saveVersion;await api('/api/config',JSON.parse(JSON.stringify(cfg)));savedVersion=version;}
+    const s=$('saved');s.textContent='сохранено';s.style.opacity=1;setTimeout(()=>s.style.opacity=0,1200);
+  })();try{await saveFlight;}finally{saveFlight=null;}
+}
+
+const OUT_FMT={pct:v=>Math.round(v*100)+'%',signed:v=>(v>0?'+':'')+v,x:v=>'×'+Number(v).toFixed(2)};
+function syncOutputs(k){document.querySelectorAll('output[data-for'+(k?'="'+k+'"':'')+']').forEach(o=>{const v=cfg[o.dataset.for];o.textContent=(OUT_FMT[o.dataset.fmt]||(x=>x))(v??0);});}
+function syncKey(k){
+  document.querySelectorAll('[data-k="'+k+'"]').forEach(el=>{if(el.type==='checkbox')el.checked=!!cfg[k];else if(document.activeElement!==el)el.value=cfg[k]??'';});
+  syncOutputs(k);if(k==='showInfoCard')syncInfo();if(k==='demoMode')syncDemo();
+}
+function syncHud(){['hudOffsetX','hudOffsetY','hudScale'].forEach(syncKey);$('hudpos').textContent=Math.round(cfg.hudOffsetX||0)+' / '+Math.round(cfg.hudOffsetY||0);}
+function moveHud(x,y){if(!cfg)return;cfg.hudOffsetX=Math.max(-100,Math.min(100,(Number(cfg.hudOffsetX)||0)+x));cfg.hudOffsetY=Math.max(-100,Math.min(100,(Number(cfg.hudOffsetY)||0)+y));syncHud();save();}
+function resetHud(){if(!cfg)return;cfg.hudOffsetX=0;cfg.hudOffsetY=0;cfg.hudScale=1;syncHud();save();}
+
+function syncInfo(){
+  const visible=!!cfg.showInfoCard;
+  $('info-quick').checked=visible;$('info-quick').disabled=infoPending;
+  document.querySelectorAll('[data-k=showInfoCard]').forEach(e=>e.checked=visible);
+}
+async function setInfoVisible(visible){
+  if(!cfg||infoPending)return;const previous=cfg.showInfoCard;infoPending=true;cfg.showInfoCard=visible;syncInfo();
+  try{save();await flushSave();clearError();toast(visible?'Подсказки показаны':'Подсказки скрыты');}
+  catch(error){cfg.showInfoCard=previous;showError(error);}finally{infoPending=false;syncInfo();}
+}
+$('info-quick').onchange=e=>setInfoVisible(e.target.checked);
+
+const TIME_LABELS={DAY:'Всегда день',NIGHT:'Всегда ночь',AUTO:'День и ночь сменяются'};
+function syncTime(){
+  const mode=cfg.timeOfDay||'AUTO';
+  document.querySelectorAll('[data-time]').forEach(b=>{b.classList.toggle('on',b.dataset.time===mode);b.setAttribute('aria-pressed',String(b.dataset.time===mode));b.disabled=timePending;});
+  $('time-status').textContent=timePending?'Меняем…':TIME_LABELS[mode];
+}
+async function setTimeOfDay(value){
+  if(!cfg||timePending)return;timePending=true;syncTime();
+  try{await flushSave();await api('/api/action',{action:'timeOfDay',value});cfg.timeOfDay=value;clearError();toast(TIME_LABELS[value]);}
+  catch(error){showError(error);}finally{timePending=false;syncTime();}
+}
+
+async function startBridge(){
+  if(bridgePending||!cfg)return;const username=val('bridge-user').trim().replace(/^@/,'').replace(/^https?:\/\/(www\.)?tiktok\.com\/@?/,'').replace(/\/.*$/,'');
+  if(!/^[A-Za-z0-9_.]{1,64}$/.test(username)){showError(new Error('Введите ник TikTok: латинские буквы, цифры, точки или подчёркивания.'));return;}
+  bridgePending=true;$('bridge-start').disabled=true;
+  try{cfg.liveUsername=username;cfg.liveEnabled=true;cfg.liveWsUrl='ws://127.0.0.1:21213/';['liveUsername','liveEnabled','liveWsUrl'].forEach(syncKey);save();await flushSave();await api('/api/action',{action:'bridgeStart',username});clearError();toast('Подключаемся к @'+username);}
+  catch(e){showError(e);}finally{bridgePending=false;poll();}
+}
+async function stopBridge(){if(bridgePending)return;bridgePending=true;$('bridge-stop').disabled=true;try{await api('/api/action',{action:'bridgeStop'});clearError();toast('Мост останавливается');}catch(e){showError(e);}finally{bridgePending=false;poll();}}
+
+function tab(t){
+  if(!$('p-'+t))t='home';
+  document.querySelectorAll('#tabs .tab').forEach(b=>b.classList.toggle('on',b.dataset.tab===t));
+  document.querySelectorAll('.page').forEach(p=>p.classList.toggle('on',p.id==='p-'+t));
+  store.set('rttt.tab',t);
+}
+const TAB_ORDER=[...document.querySelectorAll('#tabs .tab')].map(b=>b.dataset.tab);
+document.querySelectorAll('#tabs .tab').forEach(b=>{b.setAttribute('aria-label',b.querySelector('span').textContent);b.onclick=()=>tab(b.dataset.tab);});
+document.addEventListener('keydown',e=>{if(e.target.closest('input,select,textarea')||e.ctrlKey||e.metaKey||e.altKey)return;const i=+e.key-1;if(i>=0&&i<TAB_ORDER.length)tab(TAB_ORDER[i]);});
+tab(store.get('rttt.tab')||'home');
+
+function bind(){
+  document.querySelectorAll('[data-k]').forEach(el=>{
+    const k=el.dataset.k;
+    if(el.type==='checkbox'){
+      el.checked=!!cfg[k];
+      el.onchange=()=>{if(k==='showInfoCard'){setInfoVisible(el.checked);return;}cfg[k]=el.checked;syncKey(k);save();};
+    }else if(el.type==='range'){
+      el.value=cfg[k]??0;
+      el.oninput=()=>{cfg[k]=Number(el.value);syncKey(k);save();};
+    }else{
+      el.value=cfg[k]??'';
+      el.onchange=()=>{if(el.type==='number'&&!el.checkValidity()){el.reportValidity();return;}cfg[k]=el.type==='number'?Number(el.value):el.value;syncKey(k);save();};
+    }
+  });
+  const cc=$('carcolor');const setColor=hex=>{cfg.carColor=parseInt(hex.slice(1),16);cc.value=hex;save();};
+  cc.value='#'+(cfg.carColor>>>0).toString(16).padStart(6,'0').slice(-6);
+  cc.oninput=()=>setColor(cc.value);
+  $('swatches').innerHTML=['#c0392b','#e67e22','#f1c40f','#27ae60','#1abc9c','#2980b9','#8e44ad','#ecf0f1','#2c3e50'].map(c=>`<button class="btn sm" style="width:30px;height:30px;padding:0;background:${c};border-color:${c}" title="${c}" aria-label="Цвет ${c}"></button>`).join('');
+  $('swatches').querySelectorAll('button').forEach(b=>b.onclick=()=>setColor(b.title));
+  syncOutputs();syncHud();syncInfo();syncTime();
+}
+
+function effOptions(sel){return [...meta.positiveEffects,...meta.negativeEffects].map(e=>`<option ${e===sel?'selected':''}>${e}</option>`).join('');}
+function esc(v){return String(v??'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/'/g,'&#39;').replace(/</g,'&lt;');}
+const giftSrc=n=>'/gift/'+encodeURIComponent(n||'')+'.png';
+function giftImg(g,cls=''){return `<img class="${cls}" src="${giftSrc(g.name)}" alt="" data-alt="${esc(g.image||'')}" onerror="if(this.dataset.alt&&!this.dataset.f){this.dataset.f=1;this.src=this.dataset.alt}else{this.src='/mc/item/emerald.png';this.className='px'}">`;}
+function renderGifts(){
+  const q=(val('giftq')||'').toLowerCase();
+  $('gifts').innerHTML=cfg.gifts.map((g,i)=>({g,i})).filter(({g})=>!q||(g.name+' '+(g.ru||'')).toLowerCase().includes(q)).map(({g,i})=>`<tr>
+   <td><div class="icon-slot">${giftImg(g)}</div></td>
+   <td><input value="${esc(g.name)}" onchange="cfg.gifts[${i}].name=this.value;save();renderGiftTiles()"></td>
+   <td><input value="${esc(g.ru)}" onchange="cfg.gifts[${i}].ru=this.value;save();renderGiftTiles()"></td>
+   <td><input type="number" style="width:80px" value="${g.coins||0}" onchange="cfg.gifts[${i}].coins=Number(this.value);save();renderGiftTiles()"></td>
+   <td><input type="number" class="${g.meters<0?'neg':'pos'}" value="${g.meters}" onchange="cfg.gifts[${i}].meters=Number(this.value);this.className=this.value<0?'neg':'pos';save();renderGiftTiles()"></td>
+   <td><select onchange="cfg.gifts[${i}].effect=this.value;save()">${effOptions(g.effect)}</select></td>
+   <td><label class="tg"><input type="checkbox" ${g.showInOverlay!==false?'checked':''} onchange="cfg.gifts[${i}].showInOverlay=this.checked;save()" aria-label="Показывать в подсказках"></label></td>
+   <td><button class="btn dim ico sm" title="Удалить" onclick="if(confirm('Удалить подарок?')){cfg.gifts.splice(${i},1);save();renderGifts();renderGiftTiles()}">✕</button></td></tr>`).join('');
+}
+function sortGifts(){cfg.gifts.sort((a,b)=>(a.coins||0)-(b.coins||0)||(a.meters-b.meters));save();renderGifts();renderGiftTiles();}
+function addGift(name){cfg.gifts.push({name:name||'Новый подарок',ru:'',coins:1,meters:100,effect:'SPARKLE',image:'',showInOverlay:true});save();$('giftq').value='';renderGifts();renderGiftTiles();tab('gifts');}
+function renderGiftTiles(){
+  const list=[...cfg.gifts].sort((a,b)=>(a.coins||0)-(b.coins||0));
+  const ultra=[[cfg.ultraPlusGift,'Ультра +','nether_star','pos'],[cfg.ultraMinusGift,'Ультра −','fire_charge','neg']].map(([n,l,ic,c])=>({name:(n||'').split(',')[0].trim(),label:l,ic,c})).filter(u=>u.name);
+  $('gift-tiles').innerHTML=list.map(g=>`<button class="tile" data-gift="${esc(g.name)}" title="${esc(g.name)}">${giftImg(g)}<b>${esc(g.ru||g.name)}</b><span class="${g.meters<0?'neg':'pos'}">${g.meters>0?'+':''}${fmt(g.meters)} м</span><span class="muted">${g.coins||0} 💎</span></button>`).join('')
+   +ultra.map(u=>`<button class="tile" data-gift="${esc(u.name)}" title="${esc(u.name)}"><img class="px" src="/mc/item/${u.ic}.png" alt=""><b>${esc(u.name)}</b><span class="${u.c}">${u.label}</span></button>`).join('');
+  $('gift-tiles').querySelectorAll('.tile').forEach(t=>t.onclick=()=>sendGift(t.dataset.gift));
+}
+function mobMatches(m,q){return !q||m.names.join(' ').toLowerCase().includes(q)||m.ru.toLowerCase().includes(q)||m.id.includes(q);}
+function renderMobTiles(){
+  const q=(val('tmobq')||'').toLowerCase().trim();
+  const list=meta.mobs.filter(m=>mobMatches(m,q)).sort((a,b)=>(b.helper-a.helper)||a.ru.localeCompare(b.ru,'ru'));
+  $('mob-tiles').innerHTML=list.map(m=>{const s=cfg.mobs[m.id]||{};return `<button class="tile ${m.helper?'help':'hurt'}" data-mob="${m.id}" ${s.enabled===false?'disabled style="opacity:.45"':''} title="${esc(m.names.slice(0,4).join(', '))}"><img class="px" src="/mc/item/${m.id}_spawn_egg.png" alt="" onerror="this.src='/mc/item/egg.png'"><b>${esc(m.ru)}</b><span class="${m.helper?'pos':'neg'}">${m.helper?'помогает':'мешает'}</span></button>`;}).join('')||'<p class="muted small">Ничего не найдено.</p>';
+  $('mob-tiles').querySelectorAll('.tile').forEach(t=>t.onclick=()=>test({type:'mob',name:t.dataset.mob}));
+}
+document.querySelectorAll('#mobfilter .btn').forEach(b=>b.onclick=()=>{mobFilter=b.dataset.f;document.querySelectorAll('#mobfilter .btn').forEach(x=>x.classList.toggle('on',x===b));renderMobs();});
+function renderMobs(){
+  const q=(val('mobsearch')||'').toLowerCase().trim();
+  const list=meta.mobs.filter(m=>mobMatches(m,q)&&(mobFilter==='all'||(mobFilter==='help')===!!m.helper));
+  $('mobcount').textContent=list.length+' из '+meta.mobs.length+' · помогают '+meta.mobs.filter(m=>m.helper).length;
+  $('mobs').innerHTML=list.map(m=>{const s=cfg.mobs[m.id]||(cfg.mobs[m.id]={enabled:true,meters:0,power:1});
+   return `<tr><td><div class="icon-slot"><img class="px" src="/mc/item/${m.id}_spawn_egg.png" alt="" onerror="this.style.visibility='hidden'"></div></td>
+   <td><label class="tg"><input type="checkbox" ${s.enabled?'checked':''} onchange="cfg.mobs['${m.id}'].enabled=this.checked;save();renderMobTiles()" aria-label="Включить"></label></td>
+   <td><b>${esc(m.ru)}</b> <span class="muted small">${m.id}</span></td>
+   <td class="role ${m.helper?'green':'red'}">${m.helper?'помогает':'мешает'}</td>
+   <td><input type="number" class="${m.helper?'pos':'neg'}" value="${s.meters}" onchange="cfg.mobs['${m.id}'].meters=Number(this.value);save()"></td>
+   <td><input type="number" step="0.1" value="${s.power}" onchange="cfg.mobs['${m.id}'].power=Number(this.value);save()"></td>
+   <td class="small muted">${esc(m.names.slice(0,5).join(', '))}</td>
+   <td><button class="btn sm" onclick="test({type:'mob',name:'${m.id}'})">Спавн</button></td></tr>`;}).join('');
+}
+function renderVols(){
+  const v=[['volMaster','Общая'],['volEngine','Двигатель'],['volRoad','Дорога и ветер'],['volImpacts','Удары'],['volMobs','Мобы'],['volGifts','Подарки'],['volVictory','Победа и ультра']];
+  $('vols').innerHTML=v.map(([k,n])=>`<div class="sl"><label>${n}</label><input type="range" min="0" max="1" step="0.05" data-k="${k}"><output data-for="${k}" data-fmt="pct"></output></div>`).join('');
+}
+
+const WEATHER={CLEAR:['ясно','glowstone_dust'],RAIN:['дождь','water_bucket'],THUNDER:['гроза','trident']};
+function syncDemo(){$('demo-warn').hidden=!(cfg&&cfg.demoMode);}
+function tagSet(id,cls,text){const e=$(id);e.className='tag '+cls;e.textContent=text;}
+function setFeed(el,lines){const text=lines.join('\n');if(el.textContent===text)return;const bottom=el.scrollTop+el.clientHeight>=el.scrollHeight-20;el.textContent=text;if(bottom)el.scrollTop=el.scrollHeight;}
+function showBridge(b,s){
+  const busy=!!b&&['starting','installing','stopping'].includes(b.state),running=!!b?.running;
+  $('bridge-start').disabled=bridgePending||busy||running;
+  $('bridge-stop').disabled=bridgePending||!b||b.state==='stopping'||(!running&&!busy);
+  $('bridge-status').textContent=b?.message||'Мост не запущен.';
+  $('bridge-status').className='small '+(b?.state==='error'?'red':running?'green':'muted');
+  setFeed($('bridge-log'),b?.logs?.length?b.logs:['Здесь появятся сообщения моста.']);
+  const dot=$('conn-dot'),title=$('conn-title');
+  if(!s.testMode){dot.className='dot ok';title.textContent='Подключено к LIVE';}
+  else if(b?.state==='error'){dot.className='dot bad';title.textContent='Ошибка подключения';}
+  else if(busy||running){dot.className='dot wait';title.textContent=b.state==='installing'?'Установка моста…':'Подключаемся…';}
+  else{dot.className='dot';title.textContent='Нет подключения — тестовый режим';}
+}
+function showCapture(c){
+  if(!c)return;let text='Окно: '+c.width+'×'+c.height+' · '+(c.portrait?'вертикальное':'горизонтальное')+' · '+c.fps+' FPS';
+  if(c.error)text+=' · Ошибка: '+c.error;
+  else if(c.extendsBeyondDisplay)text+=' · выходит за монитор, используйте захват игры';
+  else if(c.limited)text+=' · ограничено монитором';
+  $('capture-status').textContent=text;
+}
+let polling=false;
+async function poll(){
+  if(polling)return;polling=true;
+  try{const s=await api('/api/status');lastStatus=s;
+    const d=$('dist');d.textContent=fmt(s.distance)+' м';d.classList.toggle('neg',s.distance<0);
+    const p=Math.max(0,Math.min(1,s.distance/(s.goal||999999)));$('bar').style.width=(p*100).toFixed(2)+'%';$('pct').textContent=(p*100).toFixed(1)+'%';$('goal').textContent=fmt(s.goal||999999);
+    $('wins').textContent=s.wins;$('runs').textContent=s.runs;$('speed').textContent=s.speed;$('qm').textContent=s.mobQueue;$('qg').textContent=s.rewardQueue;
+    const w=WEATHER[s.weather]||[s.weather,'glowstone_dust'];$('weather').textContent=w[0];$('wicon').src='/mc/item/'+w[1]+'.png';
+    tagSet('mode',s.testMode?'test':'live',s.testMode?'тестовый режим':'LIVE');
+    tagSet('game',s.active?'on':'off',s.active?(s.entering?'загрузка':'игра идёт'):'игра стоит');
+    $('livestatus').textContent=s.liveStatus||'';
+    showBridge(s.bridge,s);showCapture(s.capture);syncDemo();
+    if(!timePending&&s.timeOfDay&&cfg.timeOfDay!==s.timeOfDay){cfg.timeOfDay=s.timeOfDay;syncTime();}
+    setFeed($('log'),s.log);setFeed($('feed'),s.log.slice(-40));
+    const top=s.topHelpers||[];
+    $('top-list').innerHTML=top.length?top.map((t,i)=>`<div class="opt" style="padding:6px 0"><div class="lbl"><b>${['🥇','🥈','🥉'][i]||''} ${esc(t.user)}</b></div><span class="pos">+${fmt(t.meters)} м</span></div>`).join(''):'Пока никого — топ появится после первых подарков.';
+    $('quiet-status').textContent=cfg.quietChat?(s.quietSeconds>=(cfg.quietSeconds||120)?'В чате тихо '+Math.round(s.quietSeconds/60)+' мин — Стив и Алекс развлекают зрителей.':'Последнее событие от зрителей: '+s.quietSeconds+' с назад.'):'';
+    $('unknown').innerHTML=s.unknownGifts.length?s.unknownGifts.map(u=>`<div><span>${esc(u)}</span><button class="btn sm" data-add="${esc(u.split(' (id')[0].split(' — ')[0])}">в таблицу</button></div>`).join(''):'Пока все подарки знакомые.';
+    $('unknown').querySelectorAll('[data-add]').forEach(b=>b.onclick=()=>addGift(b.dataset.add));
+  }catch(e){tagSet('game','off','нет связи с игрой');}finally{polling=false;}
+}
+(async()=>{cfg=await api('/api/config');meta=await api('/api/meta');
+  renderVols();bind();renderGifts();renderGiftTiles();renderMobs();renderMobTiles();
+  document.querySelector('#mobfilter .btn').click();
+  async function refresh(){await poll();setTimeout(refresh,1000);}refresh();
+})().catch(e=>{showError(e);tagSet('game','off','нет связи с игрой');});
+</script>
+</body>
+</html>

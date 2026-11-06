@@ -1,0 +1,8 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "rttt.client.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "client": ["CameraMixin", "GameRendererMixin", "MobSoundAccess", "LivingSoundAccess", "FallingBlockAccess"],
+  "injectors": {"defaultRequire": 1}
+}

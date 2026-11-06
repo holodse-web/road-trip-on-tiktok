@@ -1,0 +1,51 @@
+{
+  "car.engine": {
+    "sounds": [
+      {
+        "name": "rttt:engine"
+      }
+    ]
+  },
+  "car.road": {
+    "sounds": [
+      {
+        "name": "rttt:road"
+      }
+    ]
+  },
+  "car.wind": {
+    "sounds": [
+      {
+        "name": "rttt:wind"
+      }
+    ]
+  },
+  "car.skid": {
+    "sounds": [
+      {
+        "name": "rttt:brake"
+      }
+    ]
+  },
+  "car.scrape": {
+    "sounds": [
+      {
+        "name": "rttt:scrape"
+      }
+    ]
+  },
+  "car.crash": {
+    "sounds": [
+      {
+        "name": "rttt:crash"
+      }
+    ]
+  },
+  "car.honk": {
+    "sounds": [
+      {
+        "name": "rttt:honk"
+      }
+    ]
+  }
+}

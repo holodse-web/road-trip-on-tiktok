@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "id": "rttt",
+  "version": "1.0.0-beta.1",
+  "name": "Road Trip on TikTok",
+  "description": "Autonomous TikTok LIVE game: Steve and Alex drive home on an endless road; viewers help and hurt them with likes, gifts and mobs from chat.",
+  "authors": [
+    "holod"
+  ],
+  "license": "All-Rights-Reserved",
+  "icon": "assets/rttt/icon.png",
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "rttt.RTTT"
+    ],
+    "client": [
+      "rttt.client.RTTTClient"
+    ]
+  },
+  "mixins": [
+    "rttt.mixins.json",
+    {
+      "config": "rttt.client.mixins.json",
+      "environment": "client"
+    }
+  ],
+  "depends": {
+    "fabricloader": ">=0.19.5",
+    "minecraft": ">=26.3 <27",
+    "java": ">=25",
+    "fabric-api": "*"
+  },
+  "contact": {
+    "homepage": "https://github.com/holodse-web/road-trip-on-tiktok",
+    "sources": "https://github.com/holodse-web/road-trip-on-tiktok",
+    "issues": "https://github.com/holodse-web/road-trip-on-tiktok/issues"
+  }
+}
