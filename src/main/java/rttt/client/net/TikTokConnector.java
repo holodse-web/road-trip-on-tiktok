@@ -337,8 +337,16 @@ public final class TikTokConnector {
                 if (rule.image == null || rule.image.isBlank()) rule.image = url;
             }
         }
-        for (String value : (cfg.ultraPlusGift + "," + cfg.ultraMinusGift).split(","))
-            if (value.trim().equalsIgnoreCase(name)) known = true;
+        for (String value : cfg.ultraPlusGift.split(","))
+            if (value.trim().equalsIgnoreCase(name)) {
+                known = true;
+                cfg.ultraPlusImage = url;
+            }
+        for (String value : cfg.ultraMinusGift.split(","))
+            if (value.trim().equalsIgnoreCase(name)) {
+                known = true;
+                cfg.ultraMinusImage = url;
+            }
         if (known) GiftImages.request(name, url);
         return known;
     }

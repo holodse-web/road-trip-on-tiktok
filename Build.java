@@ -10,7 +10,7 @@ import java.util.stream.*;
 import java.util.zip.*;
 
 public class Build {
-    static final String VERSION = "1.0.0-beta.1";
+    static final String VERSION = "1.1";
     static final String MC = "26.3";
 
     public static void main(String[] args) throws Exception {

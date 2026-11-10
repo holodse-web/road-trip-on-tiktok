@@ -24,6 +24,11 @@ public final class Host {
         }
     }
 
+    /** A line that is never queued; the layout editor uses it to show where bubbles appear. */
+    public Line sample(Who who, String ru, String en) {
+        return new Line(who, 1, 4000, ru, en);
+    }
+
     public static final long FADE_MS = 260;
     private static final long GAP_MS = 450;
     private static final int MAX_QUEUE = 3;

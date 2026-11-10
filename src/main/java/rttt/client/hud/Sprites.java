@@ -38,8 +38,20 @@ public final class Sprites {
         public int w, h;
         public int padX, padY;
         public float advance;
+        /** Only kept when running without a GPU (offline previews). */
+        public BufferedImage image;
         long lastUse;
     }
+
+    /** Set by offline tools: sprites keep their pixels instead of being uploaded as textures. */
+    public static boolean headless = false;
+
+    /**
+     * While set, {@link #get} only reports sizes: nothing is uploaded to the GPU. The overlay uses
+     * this to find where a resized block sits by default before painting it at its final size.
+     */
+    public static boolean measureOnly = false;
+    private static final Map<String, Sprite> METRICS = new java.util.HashMap<>();
 
     private static final Map<String, Sprite> CACHE = new LinkedHashMap<>(64, 0.75f, true);
     private static int counter = 0;
@@ -60,12 +72,26 @@ public final class Sprites {
 
     public static Sprite peek(String key) {
         Sprite s = CACHE.get(key);
+        if (s == null && measureOnly) return METRICS.get(key);
         if (s != null) s.lastUse = System.currentTimeMillis();
         return s;
     }
 
     public static Sprite get(String key, Supplier<BufferedImage> painter) {
         Sprite s = CACHE.get(key);
+        if (s == null && measureOnly) {
+            Sprite m = METRICS.get(key);
+            if (m == null) {
+                BufferedImage img = painter.get();
+                if (img == null) return null;
+                m = new Sprite();
+                m.w = Math.max(1, img.getWidth());
+                m.h = Math.max(1, img.getHeight());
+                if (METRICS.size() > 800) METRICS.clear();
+                METRICS.put(key, m);
+            }
+            return m;
+        }
         if (s == null) {
             BufferedImage img = painter.get();
             if (img == null) return null;
@@ -79,9 +105,18 @@ public final class Sprites {
 
     private static Sprite upload(BufferedImage img) {
         int w = Math.max(1, img.getWidth()), h = Math.max(1, img.getHeight());
+        if (headless) {
+            Sprite s = new Sprite();
+            s.image = img;
+            s.w = w;
+            s.h = h;
+            return s;
+        }
         NativeImage ni = new NativeImage(w, h, false);
+        int[] row = new int[w];
         for (int y = 0; y < h; y++) {
-            for (int x = 0; x < w; x++) ni.setPixel(x, y, img.getRGB(x, y));
+            img.getRGB(0, y, w, 1, row, 0, w);
+            for (int x = 0; x < w; x++) ni.setPixel(x, y, row[x]);
         }
         Sprite s = new Sprite();
         s.id = RTTT.id("hud/dyn_" + (counter++));
@@ -100,14 +135,15 @@ public final class Sprites {
         while (it.hasNext() && CACHE.size() > 160) {
             Map.Entry<String, Sprite> e = it.next();
             if (now - e.getValue().lastUse < 1500) continue;
-            Minecraft.getInstance().getTextureManager().release(e.getValue().id);
+            if (e.getValue().id != null) Minecraft.getInstance().getTextureManager().release(e.getValue().id);
             it.remove();
         }
     }
 
     public static void clear() {
-        for (Sprite s : CACHE.values()) Minecraft.getInstance().getTextureManager().release(s.id);
+        for (Sprite s : CACHE.values()) if (s.id != null) Minecraft.getInstance().getTextureManager().release(s.id);
         CACHE.clear();
+        METRICS.clear();
     }
 
     public static void draw(GuiGraphicsExtractor g, Sprite s, int x, int y, int argb) {

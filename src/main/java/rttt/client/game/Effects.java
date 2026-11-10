@@ -36,6 +36,7 @@ public final class Effects {
     private int victoryTicks = 0;
     private int nitroTicks = 0;
     private int blastTicks = 0;
+    private int rocketTicks = 0;
 
     public static final class Skid {
         public double x0, x1, y, zNear;
@@ -240,9 +241,24 @@ public final class Effects {
         if (st > 1.2) game.sfx.play(Sfx.Bus.IMPACT, "item.shield.block", 0.7f, 0.7f, 120);
     }
 
+    public boolean freezing() {
+        return freezeTicks > 0;
+    }
+
     public void nitro(double secs) {
         nitroTicks = Math.max(nitroTicks, (int) (secs * 20));
         flash(0x9FE8FF, 0.35f);
+    }
+
+    /** Flame and smoke pouring from the tail while a rocket launch carries the car forward. */
+    public void rocket(double power) {
+        rocketTicks = Math.max(rocketTicks, (int) Math.min(110, 40 + power * 25));
+        CarPhysics c = game.car;
+        double x = c.rearX(), y = c.y, z = Track.CAR_Z;
+        particle(ParticleTypes.EXPLOSION_EMITTER, x - 0.8, y, z, 0, 0, 0);
+        burst(ParticleTypes.LARGE_SMOKE, x - 1, y, z, 30, 2.5, 0.2);
+        burst(ParticleTypes.FLAME, x - 0.6, y, z, 40, 1.4, 0.35);
+        burst(ParticleTypes.FIREWORK, x - 0.6, y + 0.4, z, 30, 1.2, 0.5);
     }
 
     public void blastTrail(double power) {
@@ -254,7 +270,9 @@ public final class Effects {
     }
 
     public void tick() {
-        particleBudget = PARTICLES_PER_TICK;
+        // Fewer particles when the frame rate is already struggling: the stream stays smooth during big moments.
+        int fps = Minecraft.getInstance().getFps();
+        particleBudget = fps >= 50 || fps <= 0 ? PARTICLES_PER_TICK : fps >= 35 ? PARTICLES_PER_TICK * 6 / 10 : PARTICLES_PER_TICK * 3 / 10;
         flashPrev = flash;
         flash = Math.max(0, flash - 0.05f);
         CarPhysics c = game.car;
@@ -272,6 +290,20 @@ public final class Effects {
             particle(ParticleTypes.LARGE_SMOKE, front, c.y + 0.2, z + 0.4, 0.2, 0.05, 0);
             particle(ParticleTypes.ELECTRIC_SPARK, front, c.y + 0.3, z + 0.5, 0.4, 0.08, 0);
             if (blastTicks % 3 == 0) particle(ParticleTypes.FLAME, front, c.y + 0.3, z, 0.25, 0.04, 0);
+        }
+        if (rocketTicks > 0) {
+            rocketTicks--;
+            double rx = c.x - cs * 2.4, ry = c.y - sn * 2.4 + 0.05;
+            for (int i = 0; i < 3; i++) {
+                particle(ParticleTypes.FLAME, rx, ry, z + 0.4 - i * 0.4, -0.7 - rnd.nextDouble() * 0.4, (rnd.nextDouble() - 0.5) * 0.08, 0);
+                particle(ParticleTypes.SOUL_FIRE_FLAME, rx - 0.2, ry, z + 0.2 - i * 0.3, -0.8, 0.0, 0);
+            }
+            particle(ParticleTypes.LARGE_SMOKE, rx - 0.8, ry + 0.1, z, -0.25, 0.05, 0);
+            if (rocketTicks % 2 == 0) particle(ParticleTypes.FIREWORK, rx - 0.4, ry + 0.2, z + 0.5, -0.4, 0.08, 0);
+            for (int i = 0; i < 4; i++) {
+                particle(ParticleTypes.END_ROD, game.cam.x + 8 + rnd.nextDouble() * 4, c.y + rnd.nextDouble() * 7 - 2,
+                        z + 1.5 + rnd.nextDouble() * 3, -3.5 - rnd.nextDouble() * 1.5, 0, 0);
+            }
         }
         if (rearGround && speed > 1.5) {
             double wx = c.x - cs * 1.38, wy = Track.top((int) Math.floor(wx)) + 0.05;
@@ -384,6 +416,6 @@ public final class Effects {
     public void clear() {
         skids.clear();
         flash = flashPrev = 0;
-        rainbowTicks = heartTicks = flameTicks = confettiTicks = sparkTicks = freezeTicks = victoryTicks = nitroTicks = 0;
+        rainbowTicks = heartTicks = flameTicks = confettiTicks = sparkTicks = freezeTicks = victoryTicks = nitroTicks = rocketTicks = blastTicks = 0;
     }
 }

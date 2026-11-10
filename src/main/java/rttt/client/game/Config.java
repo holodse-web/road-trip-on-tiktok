@@ -21,7 +21,7 @@ import java.util.Locale;
 public class Config {
     public static final Gson GSON = new GsonBuilder().setPrettyPrinting().disableHtmlEscaping().create();
 
-    public static final int VERSION = 8;
+    public static final int VERSION = 9;
     public int configVersion = 0;
 
     public boolean autoStart = true;
@@ -56,6 +56,29 @@ public class Config {
     public double hudOffsetY = 0;
     public double hudScale = 1.0;
 
+    /**
+     * Free layout: every on-screen element can be moved, resized, faded or hidden on its own.
+     * Offsets are percentages of the frame, measured from the element's default position.
+     */
+    public Map<String, HudElement> hudLayout = new LinkedHashMap<>();
+    public int feedRows = 3;
+    public int feedSeconds = 14;
+    public boolean giftBanner = true;
+
+    public static final String[] HUD_ELEMENTS = {"counter", "toast", "likes", "wins", "test", "queue", "card", "banner", "feed", "top", "bubble"};
+
+    public static class HudElement {
+        public double x = 0, y = 0, scale = 1, opacity = 1;
+        public boolean visible = true;
+    }
+
+    public HudElement hud(String id) {
+        HudElement e = hudLayout.get(id);
+        return e != null ? e : DEFAULT_ELEMENT;
+    }
+
+    private static final HudElement DEFAULT_ELEMENT = new HudElement();
+
     public boolean colorOnFollow = true;
     public boolean colorOnSubscribe = true;
     public boolean colorOnShare = false;
@@ -67,6 +90,9 @@ public class Config {
     public List<GiftRule> gifts = new ArrayList<>();
     public String ultraPlusGift = "TikTok Universe,Universe";
     public String ultraMinusGift = "Lion";
+    /** Pictures for the ultra gifts, which are not in the gift table. A live event's own picture replaces them. */
+    public String ultraPlusImage = "https://cdn.tik.tools/gifts/8aa0babc31d440f9f090cd3b.png";
+    public String ultraMinusImage = CDN + "maliva/webcast-va/4fb89af2082a290b37d704e20f4fe729~tplv-obj.png";
     public long ultraAmount = 999_999;
     public boolean unknownGiftFallback = true;
     public long metersPerDiamond = 10;
@@ -150,6 +176,7 @@ public class Config {
         Config c = new Config();
         c.gifts = defaultGifts();
         c.configVersion = VERSION;
+        c.normalizePresentation();
         return c;
     }
 
@@ -187,6 +214,19 @@ public class Config {
         }
         if (configVersion < 8 && mobs != null && !mobs.isEmpty()) {
             MobCatalog.softenHarmful(this);
+        }
+        if (configVersion < 9 && (hudOffsetX != 0 || hudOffsetY != 0 || hudScale != 1)) {
+            // The old single "move everything" control becomes the same shift on each upper element.
+            if (hudLayout == null) hudLayout = new LinkedHashMap<>();
+            for (String id : new String[]{"counter", "toast", "likes", "wins", "test", "queue", "card", "banner"}) {
+                HudElement e = hudLayout.computeIfAbsent(id, k -> new HudElement());
+                e.x += hudOffsetX;
+                e.y += hudOffsetY;
+                e.scale *= hudScale;
+            }
+            hudOffsetX = 0;
+            hudOffsetY = 0;
+            hudScale = 1;
         }
         configVersion = VERSION;
     }
@@ -227,6 +267,7 @@ public class Config {
         if (c == null) c = defaults();
         if (c.gifts == null) c.gifts = new ArrayList<>();
         if (c.mobs == null) c.mobs = new LinkedHashMap<>();
+        if (c.hudLayout == null) c.hudLayout = new LinkedHashMap<>();
         c.migrate();
         c.normalizePresentation();
         MobCatalog.fillDefaults(c);
@@ -252,6 +293,8 @@ public class Config {
         if (c == null) return old;
         if (c.gifts == null) c.gifts = old.gifts;
         if (c.mobs == null || c.mobs.isEmpty()) c.mobs = old.mobs;
+        if (c.hudLayout == null) c.hudLayout = old.hudLayout;
+        c.configVersion = VERSION;
         c.normalizePresentation();
         MobCatalog.fillDefaults(c);
         return c;
@@ -266,6 +309,18 @@ public class Config {
         hudOffsetY = finiteClamp(hudOffsetY, -100, 100, 0);
         hudScale = finiteClamp(hudScale, 0.5, 2, 1);
         liveUsername = liveUsername == null ? "" : liveUsername.trim();
+        feedRows = Math.max(0, Math.min(5, feedRows));
+        feedSeconds = Math.max(3, Math.min(120, feedSeconds));
+        if (hudLayout == null) hudLayout = new LinkedHashMap<>();
+        hudLayout.keySet().removeIf(k -> k == null || !java.util.Arrays.asList(HUD_ELEMENTS).contains(k));
+        for (String id : HUD_ELEMENTS) {
+            HudElement e = hudLayout.get(id);
+            if (e == null) hudLayout.put(id, e = new HudElement());
+            e.x = finiteClamp(e.x, -100, 100, 0);
+            e.y = finiteClamp(e.y, -100, 100, 0);
+            e.scale = finiteClamp(e.scale, 0.4, 2.5, 1);
+            e.opacity = finiteClamp(e.opacity, 0.15, 1, 1);
+        }
     }
 
     public static String normalizeTimeOfDay(String value) {

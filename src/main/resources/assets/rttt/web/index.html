@@ -6,259 +6,309 @@
 <title>Road Trip on TikTok — пульт</title>
 <style>
 :root{
-  --page:#141518;--panel:#1d1e22;--panel-2:#25262b;--panel-3:#2c2d33;--line:#2c2d33;--line-2:#3a3c43;
-  --text:#ececef;--muted:#9c9ea8;--faint:#6f717b;
+  --page:#131417;--card:#1b1c20;--well:#232429;--well-2:#2b2c32;--line:#2a2b31;--line-2:#383a41;
+  --text:#ececef;--muted:#9a9ca6;--faint:#6c6e78;
   --brand:#d7263d;--brand-hi:#e0354b;--brand-lo:#8f1527;
   --fwd:#4cc46a;--back:#f0544f;--gold:#f2b53a;--info:#6ec6e8;
-  --r:6px;
+  --r:7px;--gap:14px;--ctl:236px;
   --font:"Segoe UI",system-ui,-apple-system,Roboto,sans-serif;
 }
 *{box-sizing:border-box}
 html{background:var(--page)}
-body{margin:0;color:var(--text);font:14px/1.45 var(--font);min-height:100vh;background:var(--page)}
-h1,h2,h3{font-weight:600}
+body{margin:0;color:var(--text);font:14px/1.45 var(--font);min-height:100vh}
 button,input,select{font:inherit;color:inherit}
-img.px,.btn img,.tab img,.title img,.mini img,.tile img.px{image-rendering:pixelated}
+img.px,.btn img,.tab img,.brand-mark,.mini img,.tile img.px{image-rendering:pixelated}
+[hidden]{display:none!important}
 
-.top{position:sticky;top:0;z-index:20;background:rgba(20,21,24,.97);border-bottom:1px solid var(--line)}
-.bar{max-width:1280px;margin:0 auto;padding:10px 18px 4px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
-.title{display:flex;align-items:center;gap:10px;margin-right:auto}
-.title img{width:26px;height:26px}
-.title h1{margin:0;font-size:16px;line-height:1.1}
-.title small{display:block;color:var(--muted);font-size:12px;font-weight:400;margin-top:2px}
-.state{display:flex;gap:6px;flex-wrap:wrap}
-.tag{font-size:12.5px;font-weight:600;padding:4px 10px;border-radius:99px;background:var(--panel);border:1px solid var(--line-2);white-space:nowrap}
-.tag::before{content:"";display:inline-block;width:7px;height:7px;border-radius:50%;background:currentColor;margin-right:6px;vertical-align:1px}
-.tag.live,.tag.on{color:var(--fwd)}.tag.test{color:var(--gold)}.tag.off{color:var(--back)}
-#saved{font-size:12px;color:var(--fwd);opacity:0;transition:opacity .3s;min-width:70px;text-align:right}
-.tabs{max-width:1280px;margin:0 auto;padding:0 10px;display:flex;gap:2px;overflow-x:auto;scrollbar-width:none}
+/* ---------- top bar */
+.top{position:sticky;top:0;z-index:20;background:rgba(19,20,23,.96);backdrop-filter:blur(6px);border-bottom:1px solid var(--line)}
+.bar{max-width:1240px;margin:0 auto;padding:10px 18px 0;display:flex;align-items:center;gap:12px}
+.brand{display:flex;align-items:center;gap:10px;margin-right:auto;min-width:0}
+.brand-mark{width:26px;height:26px;flex:none}
+.brand h1{margin:0;font-size:15.5px;font-weight:650;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.chips{display:flex;gap:6px;align-items:center}
+.chip{font-size:12px;font-weight:600;padding:3px 10px;border-radius:99px;background:var(--card);border:1px solid var(--line-2);white-space:nowrap;color:var(--muted)}
+.chip::before{content:"";display:inline-block;width:7px;height:7px;border-radius:50%;background:currentColor;margin-right:6px;vertical-align:1px}
+.chip.on{color:var(--fwd)}.chip.test{color:var(--gold)}.chip.off{color:var(--back)}
+#saved{font-size:12px;color:var(--fwd);opacity:0;transition:opacity .3s;width:74px;text-align:right}
+.tabs{max-width:1240px;margin:0 auto;padding:4px 12px 0;display:flex;gap:2px;overflow-x:auto;scrollbar-width:none}
 .tab{flex:none;display:flex;align-items:center;gap:7px;background:none;border:0;border-bottom:2px solid transparent;padding:9px 12px;color:var(--muted);cursor:pointer;font-weight:600}
-.tab img{width:18px;height:18px;opacity:.7}
+.tab img{width:18px;height:18px;opacity:.65}
 .tab:hover{color:var(--text)}
 .tab.on{color:var(--text);border-bottom-color:var(--brand)}
 .tab.on img{opacity:1}
-.tab kbd{font:11px var(--font);color:var(--faint);border:1px solid var(--line-2);border-radius:4px;padding:0 4px}
 
-main{max-width:1280px;margin:0 auto;padding:16px 18px 40px}
+/* ---------- layout */
+main{max-width:1240px;margin:0 auto;padding:18px 18px 48px}
 .page{display:none}.page.on{display:block}
-.cols{display:grid;grid-template-columns:repeat(12,1fr);gap:14px;align-items:start}
-.s12{grid-column:span 12}.s8{grid-column:span 8}.s7{grid-column:span 7}.s6{grid-column:span 6}.s5{grid-column:span 5}.s4{grid-column:span 4}
-@media(max-width:980px){.s8,.s7,.s6,.s5,.s4{grid-column:span 12}}
-.stack{display:grid;gap:14px;min-width:0}
-.box{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:16px 18px;min-width:0}
-.box>h2,.hd h2{margin:0 0 12px;font-size:12.5px;letter-spacing:.5px;text-transform:uppercase;color:var(--muted)}
-.hd{display:flex;align-items:baseline;justify-content:space-between;gap:10px;flex-wrap:wrap}
-.hd h2{margin-bottom:12px}
-.sub{color:var(--muted);font-size:12.5px;margin:0 0 12px}
-.sep{height:1px;background:var(--line);margin:14px 0}
+.grid{display:grid;gap:var(--gap);align-items:stretch}
+.g-main{grid-template-columns:minmax(0,7fr) minmax(0,5fr)}
+.g-3{grid-template-columns:repeat(3,minmax(0,1fr))}
+.g-2{grid-template-columns:repeat(2,minmax(0,1fr))}
+.stack{display:flex;flex-direction:column;gap:var(--gap);min-width:0}
+.stack>.card.fill{flex:1}
+.page>*+*{margin-top:var(--gap)}
+@media(max-width:960px){.g-main,.g-3,.g-2{grid-template-columns:minmax(0,1fr)}}
+
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px 18px;min-width:0;display:flex;flex-direction:column}
+.card>.body{flex:1;min-height:0;display:flex;flex-direction:column}
+.head{display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:28px;margin-bottom:10px}
+.head h2{margin:0;font-size:12px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:var(--muted)}
+.head .tools{display:flex;gap:6px;align-items:center;flex-wrap:wrap;justify-content:flex-end}
+.note{color:var(--muted);font-size:12.5px;margin:0}
 .muted{color:var(--muted)}.small{font-size:12px}
-.gold{color:var(--gold)}.green{color:var(--fwd)}.red{color:var(--back)}.aqua{color:var(--info)}
-.pos{color:var(--fwd)!important}.neg{color:var(--back)!important}
+.pos{color:var(--fwd)!important}.neg{color:var(--back)!important}.gold{color:var(--gold)}
 
-.dist{font-weight:700;font-size:clamp(36px,6vw,58px);line-height:1;font-variant-numeric:tabular-nums;letter-spacing:-.5px}
-.dist.neg{color:var(--back)}
-.xp{margin:14px 0 6px;height:8px;background:var(--panel-3);border-radius:99px;overflow:hidden}
-.xp i{display:block;height:100%;width:0;background:var(--fwd);transition:width .6s ease}
-.goal{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
-.minis{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:14px}
-.mini{background:var(--panel-2);border-radius:var(--r);padding:8px 10px;display:flex;gap:9px;align-items:center;min-width:0}
-.mini img{width:22px;height:22px;flex:none}
-.mini b{display:block;font-size:18px;line-height:1.1;font-variant-numeric:tabular-nums}
-.mini span{color:var(--muted);font-size:11.5px}
+/* ---------- setting rows: label left, control right, one shared edge */
+.rows{display:flex;flex-direction:column}
+.r{display:flex;align-items:center;justify-content:space-between;gap:14px;min-height:44px;padding:6px 0;border-top:1px solid var(--line)}
+.rows>.r:first-child,.rows.cols>.r:nth-child(2){border-top:0}
+.r .l{min-width:0;flex:1}
+.r .l b{display:block;font-weight:500}
+.r .l small{display:block;color:var(--muted);font-size:12px;line-height:1.35}
+.r .c{flex:none;width:var(--ctl);display:flex;justify-content:flex-end;align-items:center;gap:8px}
+.r .c.auto{width:auto}
+.r.stack-ctl{flex-wrap:wrap}
+.r.stack-ctl .c{width:100%;justify-content:stretch}
+.rows.cols{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));column-gap:28px}
+@media(max-width:700px){.rows.cols{grid-template-columns:minmax(0,1fr)}.rows.cols>.r:nth-child(2){border-top:1px solid var(--line)}}
+@media(max-width:520px){:root{--ctl:170px}}
 
-.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
-.row+.row{margin-top:8px}
-.grow{flex:1;min-width:160px}
-.fields{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px}
-.f{display:flex;flex-direction:column;gap:5px;min-width:0}
-.f>span{font-size:12px;color:var(--muted)}
-input,select{background:var(--page);border:1px solid var(--line-2);border-radius:var(--r);padding:7px 10px;min-width:0;outline:none;transition:border-color .15s}
+input,select{background:var(--page);border:1px solid var(--line-2);border-radius:var(--r);padding:6px 10px;min-width:0;outline:none;transition:border-color .15s;height:34px}
 input:focus,select:focus{border-color:var(--brand)}
-input[type=number]{width:110px;font-variant-numeric:tabular-nums}
-.fields input,.fields select{width:100%}
-input[type=color]{padding:2px;width:44px;height:34px;cursor:pointer}
+.c input:not([type=checkbox]):not([type=range]):not([type=color]),.c select{width:100%}
+.num{display:flex;align-items:center;gap:6px;width:100%}
+.num input{width:100%;text-align:right;font-variant-numeric:tabular-nums}
+.num span{color:var(--muted);font-size:12px;width:34px;flex:none}
+input[type=color]{padding:2px;width:40px;height:34px;cursor:pointer;flex:none}
 input[type=checkbox],input[type=range]{accent-color:var(--brand)}
-input[type=range]{padding:0;border:0;background:none;width:100%;height:20px;cursor:pointer}
+.range{display:flex;align-items:center;gap:10px;width:100%}
+.range input{flex:1;padding:0;border:0;background:none;height:20px;cursor:pointer}
+.range output{width:46px;text-align:right;font-variant-numeric:tabular-nums;font-size:13px;color:var(--muted)}
 
-.btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;background:var(--panel-2);border:1px solid var(--line-2);border-bottom:3px solid #111214;border-radius:var(--r);
-  padding:7px 13px 6px;cursor:pointer;font-weight:600;line-height:1.2;transition:background .12s,border-color .12s;white-space:nowrap}
-.btn img{width:18px;height:18px}
-.btn:hover{background:var(--panel-3);border-color:#4a4c55;border-bottom-color:#111214}
-.btn:active{transform:translateY(1px);border-bottom-width:2px;margin-top:1px}
-.btn.brand{background:var(--brand);border-color:var(--brand);border-bottom-color:var(--brand-lo);color:#fff}
-.btn.brand:hover{background:var(--brand-hi)}
-.btn.go{background:#28783e;border-color:#28783e;border-bottom-color:#1a5229;color:#fff}
-.btn.go:hover{background:#2e8a47}
-.btn.warn{background:#3a3020;border-color:#5a4a28;border-bottom-color:#211b10;color:var(--gold)}
-.btn.dim{background:transparent}
-.btn.sm{font-size:12.5px;padding:4px 9px 3px}
-.btn.lg{padding:10px 18px 9px;font-size:15px}
-.btn.ico{padding:5px 8px 4px}
-.btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
-.seg{display:inline-flex;gap:4px;flex-wrap:wrap}
-.seg .btn.on{background:var(--text);color:var(--page);border-color:var(--text);border-bottom-color:#8d8f99}
-
-.tg{display:inline-flex;align-items:center;gap:10px;cursor:pointer;user-select:none}
-.tg input{appearance:none;-webkit-appearance:none;width:36px;height:21px;border-radius:99px;background:var(--line-2);border:0;position:relative;cursor:pointer;padding:0;flex:none;transition:background .15s}
-.tg input::after{content:"";position:absolute;top:3px;left:3px;width:15px;height:15px;border-radius:50%;background:#fff;transition:left .15s}
+.tg{display:inline-flex;align-items:center;gap:8px;cursor:pointer;user-select:none}
+.tg input{appearance:none;-webkit-appearance:none;width:38px;height:22px;border-radius:99px;background:var(--line-2);border:0;position:relative;cursor:pointer;padding:0;flex:none;transition:background .15s}
+.tg input::after{content:"";position:absolute;top:3px;left:3px;width:16px;height:16px;border-radius:50%;background:#fff;transition:left .15s}
 .tg input:checked{background:var(--brand)}
-.tg input:checked::after{left:18px}
-.opt{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:9px 0;border-bottom:1px solid var(--line)}
-.opt:last-child{border-bottom:0}
-.opt .lbl{display:flex;flex-direction:column;min-width:0}
-.opt .lbl small{color:var(--muted);font-size:12px}
+.tg input:checked::after{left:19px}
+.tg input:disabled{opacity:.5}
 
-.sl{display:grid;grid-template-columns:150px 1fr 58px;align-items:center;gap:12px;margin:8px 0}
-.sl label{color:var(--muted);font-size:13px}
-.sl output{text-align:right;font-variant-numeric:tabular-nums;font-size:13px}
-@media(max-width:560px){.sl{grid-template-columns:100px 1fr 50px}}
+/* ---------- buttons */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;background:var(--well);border:1px solid var(--line-2);border-radius:var(--r);
+  padding:0 13px;height:34px;cursor:pointer;font-weight:600;line-height:1;transition:background .12s,border-color .12s;white-space:nowrap}
+.btn img{width:18px;height:18px}
+.btn:hover{background:var(--well-2);border-color:#4a4c55}
+.btn:active{transform:translateY(1px)}
+.btn.brand{background:var(--brand);border-color:var(--brand);color:#fff}.btn.brand:hover{background:var(--brand-hi)}
+.btn.go{background:#25773b;border-color:#25773b;color:#fff}.btn.go:hover{background:#2c8a46}
+.btn.gold{background:#3a3020;border-color:#5a4a28;color:var(--gold)}
+.btn.ghost{background:transparent}
+.btn.danger{background:transparent;color:#ff9a96;border-color:#5a3236}.btn.danger:hover{background:#332023}
+.btn.sm{height:28px;padding:0 10px;font-size:12.5px}
+.btn.lg{height:42px;font-size:15px}
+.btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
+.seg{display:inline-flex;background:var(--page);border:1px solid var(--line-2);border-radius:var(--r);padding:2px;gap:2px;width:100%}
+.seg .btn{flex:1;min-width:0;height:28px;border:0;background:transparent;padding:0 8px;font-size:12.5px;color:var(--muted)}
+.seg .btn:hover{color:var(--text);background:var(--well)}
+.seg .btn.on{background:var(--text);color:var(--page)}
+.btns{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}
+.btns .btn{width:100%}
+.line{display:flex;gap:8px;align-items:center}
+.line>input{flex:1}
 
-.conn[hidden]{display:none}
-.conn{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:var(--r);background:var(--panel-2);margin-bottom:12px}
+/* ---------- home */
+.dist{font-weight:700;font-size:clamp(34px,5.4vw,54px);line-height:1;font-variant-numeric:tabular-nums;letter-spacing:-.5px}
+.dist.neg{color:var(--back)}
+.progress{margin:14px 0 6px;height:8px;background:var(--well-2);border-radius:99px;overflow:hidden}
+.progress i{display:block;height:100%;width:0;background:var(--fwd);transition:width .6s ease}
+.goal{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
+.stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:14px 0}
+.stat{background:var(--well);border-radius:var(--r);padding:9px 12px;min-width:0}
+.stat b{display:block;font-size:19px;line-height:1.15;font-variant-numeric:tabular-nums}
+.stat span{color:var(--muted);font-size:12px}
+.actions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:auto}
+.conn{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:var(--r);background:var(--well);margin-bottom:12px}
 .dot{width:10px;height:10px;border-radius:50%;background:var(--faint);flex:none}
-.dot.ok{background:var(--fwd);box-shadow:0 0 0 3px rgba(76,196,106,.18)}
-.dot.wait{background:var(--gold)}
-.dot.bad{background:var(--back)}
+.dot.ok{background:var(--fwd);box-shadow:0 0 0 3px rgba(76,196,106,.18)}.dot.wait{background:var(--gold)}.dot.bad{background:var(--back)}
 .conn b{display:block;font-size:14px}
 .conn span{color:var(--muted);font-size:12px;overflow-wrap:anywhere}
+.warn{background:#382326;border:1px solid #5a3236}
+.qchips{display:flex;gap:6px}
+.qchip{font-size:12px;color:var(--muted);background:var(--well);border-radius:99px;padding:3px 9px;white-space:nowrap;font-variant-numeric:tabular-nums}
+.qchip b{color:var(--text)}
+.feed{flex:1;min-height:220px;overflow:auto;background:var(--page);border:1px solid var(--line);border-radius:var(--r);padding:8px 10px;font:12.5px/1.6 Consolas,ui-monospace,monospace;white-space:pre-wrap;color:#d6d7dc}
+.feed.tall{min-height:540px}
+.leaders .r{min-height:38px}
+.medal{display:inline-grid;place-items:center;width:20px;height:20px;border-radius:50%;font-size:11px;font-weight:700;color:#1a1205;margin-right:8px}
 
-.feed{height:240px;overflow:auto;background:var(--page);border:1px solid var(--line);border-radius:var(--r);padding:8px 10px;font:12.5px/1.6 Consolas,ui-monospace,monospace;white-space:pre-wrap;color:#d6d7dc}
-.feed.tall{height:520px}
-
-.tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(104px,1fr));gap:8px}
-.tile{display:flex;flex-direction:column;align-items:center;gap:4px;background:var(--panel-2);border:1px solid var(--line-2);border-bottom:3px solid #111214;border-radius:var(--r);padding:8px 6px 6px;cursor:pointer;min-width:0;text-align:center}
-.tile:hover{background:var(--panel-3);border-color:#4a4c55}
+/* ---------- tiles (test tab) */
+.tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(108px,1fr));gap:8px;max-height:344px;overflow:auto;padding-right:2px}
+.tile{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;background:var(--well);border:1px solid var(--line-2);border-radius:var(--r);padding:9px 6px 7px;cursor:pointer;min-width:0;text-align:center;min-height:104px}
+.tile:hover{background:var(--well-2);border-color:#4a4c55}
 .tile:active{transform:translateY(1px)}
 .tile img{width:40px;height:40px;object-fit:contain}
 .tile img.px{width:32px;height:32px;margin:4px 0}
 .tile b{font-size:12.5px;line-height:1.2;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .tile span{font-size:11.5px;font-variant-numeric:tabular-nums}
-.tile.help{box-shadow:inset 0 -2px 0 rgba(76,196,106,.5)}
-.tile.hurt{box-shadow:inset 0 -2px 0 rgba(240,84,79,.45)}
-.tiles.scroll{max-height:330px;overflow:auto;padding-right:2px}
+.tile.help{box-shadow:inset 0 -2px 0 rgba(76,196,106,.55)}
+.tile.hurt{box-shadow:inset 0 -2px 0 rgba(240,84,79,.5)}
+.tile:disabled{opacity:.4;cursor:not-allowed}
 
-.pad{display:grid;grid-template-columns:repeat(3,38px);grid-template-rows:repeat(3,34px);gap:4px}
-.pad .btn{padding:0}
-.pad .c{grid-column:2;grid-row:2}
-
-.tbl{overflow:auto;border:1px solid var(--line);border-radius:8px}
+/* ---------- tables */
+.tbl{overflow:auto;border:1px solid var(--line);border-radius:8px;max-height:620px}
 table{width:100%;border-collapse:collapse}
-th,td{padding:7px 10px;text-align:left;vertical-align:middle;border-bottom:1px solid var(--line)}
+th,td{padding:6px 10px;text-align:left;vertical-align:middle;border-bottom:1px solid var(--line);white-space:nowrap}
 tr:last-child td{border-bottom:0}
-th{position:sticky;top:0;background:var(--panel-2);color:var(--muted);font-weight:600;font-size:12px;z-index:1}
-td input[type=number]{width:96px}
-.icon-slot{width:34px;height:34px;display:grid;place-items:center}
+th{position:sticky;top:0;background:var(--well);color:var(--muted);font-weight:600;font-size:12px;z-index:1}
+td input,td select{height:30px}
+td input[type=number]{width:96px;text-align:right}
+td input.name{width:100%;min-width:130px}
+.icon-slot{width:32px;height:32px;display:grid;place-items:center}
 .icon-slot img{width:30px;height:30px;object-fit:contain}
-.icon-slot img.px{width:26px;height:26px}
-.role{font-size:12.5px;font-weight:600}
-.mobs{max-height:600px}
-.gifts-tbl{max-height:620px}
-.filter{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
-.filter input{flex:1;min-width:200px}
+.icon-slot img.px{width:24px;height:24px}
+.search{width:220px}
 code{background:var(--page);border:1px solid var(--line);border-radius:4px;color:var(--info);padding:1px 6px;font-size:12px;overflow-wrap:anywhere}
-.how{display:grid;gap:8px}
-.how div{background:var(--panel-2);border-radius:var(--r);padding:10px 12px;color:var(--muted);font-size:12.5px;overflow-wrap:anywhere}
-.how b{color:var(--text)}
-.unknown div{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--line)}
-details summary{cursor:pointer;color:var(--muted);font-size:13px;margin-top:4px}
-.toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%) translateY(8px);background:var(--panel-3);border:1px solid var(--line-2);color:var(--text);padding:8px 14px;
+details{margin-top:10px}
+details summary{cursor:pointer;color:var(--muted);font-size:12.5px}
+details .how{display:grid;gap:6px;margin-top:8px}
+details .how div{background:var(--well);border-radius:var(--r);padding:8px 10px;color:var(--muted);font-size:12.5px;overflow-wrap:anywhere}
+details .how b{color:var(--text)}
+.unknown{display:flex;flex-direction:column}
+.unknown div{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:6px 0;border-top:1px solid var(--line);font-size:12.5px}
+
+/* ---------- settings: section menu + one column of cards */
+.settings{display:grid;grid-template-columns:200px minmax(0,760px);gap:22px;justify-content:center;align-items:start}
+.menu{position:sticky;top:112px;display:flex;flex-direction:column;gap:2px}
+.menu a{color:var(--muted);text-decoration:none;padding:7px 12px;border-radius:var(--r);font-weight:600;font-size:13.5px}
+.menu a:hover{color:var(--text);background:var(--card)}
+.menu a.on{color:var(--text);background:var(--card);box-shadow:inset 3px 0 0 var(--brand)}
+.settings .card{scroll-margin-top:118px}
+@media(max-width:960px){.settings{grid-template-columns:minmax(0,1fr)}.menu{position:static;flex-direction:row;overflow-x:auto;scrollbar-width:none}.menu a{flex:none}}
+.swatches{display:flex;gap:4px;flex-wrap:wrap;justify-content:flex-end}
+.swatches button{width:24px;height:24px;border-radius:6px;border:1px solid rgba(255,255,255,.18);cursor:pointer;padding:0}
+
+/* ---------- layout editor */
+.stage-wrap{display:flex;justify-content:center}
+.stage{position:relative;width:100%;max-width:calc(72vh*var(--ar,0.5625));aspect-ratio:var(--ar,0.5625);border-radius:8px;overflow:hidden;border:1px solid var(--line-2);
+  background:linear-gradient(#86b7f2 0 52%,#6daa4b 52% 54.5%,#8e9399 54.5% 57%,#5e9a40 57% 59%,#55585f 59% 100%);touch-action:none;user-select:none;outline:none}
+.stage:focus-visible{border-color:var(--info)}
+.stage .car{position:absolute;left:38%;top:47.5%;width:16%;height:7%;border-radius:40% 45% 12% 12%;background:#d7263d;opacity:.9;pointer-events:none}
+.stage .car::before,.stage .car::after{content:"";position:absolute;bottom:-22%;width:22%;aspect-ratio:1;border-radius:50%;background:#1b1c20;border:2px solid #dde3ea}
+.stage .car::before{left:10%}.stage .car::after{right:10%}
+.hb{position:absolute;border:1.5px dashed rgba(255,255,255,.75);border-radius:5px;background:rgba(20,24,34,.42);cursor:grab;display:flex;align-items:center;justify-content:center;min-width:14px;min-height:10px;color:#fff;font-size:11px;font-weight:600;line-height:1.1;text-align:center;text-shadow:0 1px 2px #000;overflow:visible}
+.hb span{overflow:hidden;max-width:100%;max-height:100%;padding:0 3px;pointer-events:none}
+.hb:hover{background:rgba(40,48,66,.55)}
+.hb.sel{border:2px solid var(--gold);background:rgba(242,181,58,.22);z-index:5}
+.hb.off{border-color:rgba(240,84,79,.8);background:rgba(240,84,79,.12);color:#ffb7b4}
+.hb.absent{display:none}
+.hb.dragging{cursor:grabbing}
+.hb i{position:absolute;right:-7px;bottom:-7px;width:14px;height:14px;border-radius:50%;background:var(--gold);border:2px solid #111;cursor:nwse-resize;display:none}
+.hb.sel i{display:block}
+.zone{position:absolute;border:1px dashed rgba(110,198,232,.9);background:rgba(110,198,232,.13);color:#d9f3ff;font-size:10.5px;padding:2px 5px;pointer-events:none;display:none}
+.stage.zones .zone{display:block}
+.guide{position:absolute;top:0;bottom:0;left:50%;width:1px;background:var(--gold);display:none;pointer-events:none}
+.stage.snap .guide{display:block}
+.stage-msg{position:absolute;inset:0;display:none;align-items:center;justify-content:center;text-align:center;padding:20px;background:rgba(19,20,23,.84);color:var(--text);font-weight:600;z-index:9}
+.stage.idle .stage-msg{display:flex}
+.ellist .r{cursor:pointer;padding:6px 8px;margin:0 -8px;border-radius:var(--r);border-top-color:transparent;min-height:38px}
+.ellist .r:hover{background:var(--well)}
+.ellist .r.on{background:var(--well-2);box-shadow:inset 3px 0 0 var(--gold)}
+
+.toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%) translateY(8px);background:var(--well-2);border:1px solid var(--line-2);color:var(--text);padding:8px 14px;
   border-radius:var(--r);opacity:0;transition:.2s;pointer-events:none;z-index:50;font-weight:600}
 .toast.on{opacity:1;transform:translateX(-50%)}
-#panel-error{max-width:1244px;margin:12px auto 0;padding:10px 14px;color:#ffb7b4;background:#382326;border:1px solid #674044;border-radius:6px;display:flex;gap:10px;align-items:center}
-#panel-error[hidden]{display:none}
+#panel-error{max-width:1204px;margin:12px auto 0;padding:10px 14px;color:#ffb7b4;background:#382326;border:1px solid #674044;border-radius:8px;display:flex;gap:10px;align-items:center}
 #panel-error span{flex:1}
-:focus-visible{outline:2px solid var(--info);outline-offset:3px}
+:focus-visible{outline:2px solid var(--info);outline-offset:2px}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{transition:none!important}}
-@media(max-width:560px){main{padding:10px}.minis{grid-template-columns:repeat(3,1fr)}.tab span{display:none}.tab kbd{display:none}}
+@media(max-width:600px){main{padding:12px 10px 40px}.tab span{display:none}.brand h1{font-size:14px}.stats .stat b{font-size:16px}.card{padding:14px}}
 </style>
 </head>
 <body>
 <div class="top">
   <div class="bar">
-    <div class="title"><img src="/mc/item/minecart.png" alt=""><div><h1>Road Trip on TikTok</h1><small>пульт стрима</small></div></div>
-    <div class="state"><span class="tag" id="mode">…</span><span class="tag" id="game">…</span></div>
+    <div class="brand"><img class="brand-mark" src="/mc/item/minecart.png" alt=""><h1>Road Trip on TikTok</h1></div>
+    <div class="chips"><span class="chip" id="mode">…</span><span class="chip" id="game">…</span></div>
     <span id="saved">сохранено</span>
   </div>
   <nav class="tabs" id="tabs">
-    <button class="tab" data-tab="home"><img src="/mc/item/compass_00.png" alt=""><span>Эфир</span><kbd>1</kbd></button>
-    <button class="tab" data-tab="test"><img src="/mc/item/command_block_minecart.png" alt="" onerror="this.src='/mc/item/redstone_torch.png'"><span>Тест</span><kbd>2</kbd></button>
-    <button class="tab" data-tab="gifts"><img src="/mc/item/emerald.png" alt=""><span>Подарки</span><kbd>3</kbd></button>
-    <button class="tab" data-tab="mobs"><img src="/mc/item/zombie_spawn_egg.png" alt=""><span>Мобы</span><kbd>4</kbd></button>
-    <button class="tab" data-tab="settings"><img src="/mc/item/redstone.png" alt=""><span>Настройки</span><kbd>5</kbd></button>
-    <button class="tab" data-tab="log"><img src="/mc/item/writable_book.png" alt=""><span>Журнал</span><kbd>6</kbd></button>
+    <button class="tab" data-tab="home"><img src="/mc/item/compass_00.png" alt=""><span>Эфир</span></button>
+    <button class="tab" data-tab="test"><img src="/mc/item/command_block_minecart.png" alt="" onerror="this.src='/mc/item/redstone_torch.png'"><span>Тест</span></button>
+    <button class="tab" data-tab="gifts"><img src="/mc/item/emerald.png" alt=""><span>Подарки</span></button>
+    <button class="tab" data-tab="mobs"><img src="/mc/item/zombie_spawn_egg.png" alt=""><span>Мобы</span></button>
+    <button class="tab" data-tab="ui"><img src="/mc/item/painting.png" alt=""><span>Интерфейс</span></button>
+    <button class="tab" data-tab="settings"><img src="/mc/item/redstone.png" alt=""><span>Настройки</span></button>
+    <button class="tab" data-tab="log"><img src="/mc/item/writable_book.png" alt=""><span>Журнал</span></button>
   </nav>
 </div>
-<div id="panel-error" role="alert" hidden><span id="panel-error-text"></span><button class="btn sm dim" onclick="$('panel-error').hidden=true">Скрыть</button></div>
+<div id="panel-error" role="alert" hidden><span id="panel-error-text"></span><button class="btn sm ghost" onclick="$('panel-error').hidden=true">Скрыть</button></div>
 <main>
 
 <!-- ЭФИР -->
 <section class="page" id="p-home">
-  <div class="cols">
-    <div class="stack s7">
-      <div class="box">
-        <h2>Заезд</h2>
+  <div class="grid g-main">
+    <div class="card">
+      <div class="head"><h2>Заезд</h2><span class="small muted">цель <span id="goal">999 999</span> м</span></div>
+      <div class="body">
         <div class="dist" id="dist">—</div>
-        <div class="xp"><i id="bar"></i></div>
-        <div class="goal"><span id="pct">0%</span><span>цель <span id="goal">999 999</span> м</span></div>
-        <div class="minis">
-          <div class="mini"><img src="/mc/item/totem_of_undying.png" alt=""><div><b class="gold" id="wins">0</b><span>победы</span></div></div>
-          <div class="mini"><img src="/mc/item/map.png" alt=""><div><b id="runs">0</b><span>заезды</span></div></div>
-          <div class="mini"><img src="/mc/item/sugar.png" alt=""><div><b id="speed">0</b><span>блоков/с</span></div></div>
+        <div class="progress"><i id="bar"></i></div>
+        <div class="goal"><span id="pct">0%</span><span>до дома</span></div>
+        <div class="stats">
+          <div class="stat"><b class="gold" id="wins">0</b><span>победы</span></div>
+          <div class="stat"><b id="runs">0</b><span>заезды</span></div>
+          <div class="stat"><b id="speed">0</b><span>блоков/с</span></div>
         </div>
-        <div class="row" style="margin-top:14px">
-          <button class="btn go lg" onclick="act('start')"><img src="/mc/item/minecart.png" alt="">Старт</button>
-          <button class="btn lg" onclick="act('stop')"><img src="/mc/item/barrier.png" alt="">Стоп</button>
-          <button class="btn brand lg" onclick="if(confirm('Начать новый заезд с нуля?'))act('restart')"><img src="/mc/item/clock_00.png" alt="">Новый заезд</button>
+        <div class="actions">
+          <button class="btn go lg" onclick="act('start')">Старт</button>
+          <button class="btn lg" onclick="act('stop')">Стоп</button>
+          <button class="btn brand lg" onclick="if(confirm('Начать новый заезд с нуля?'))act('restart')">Новый заезд</button>
         </div>
-      </div>
-
-      <div class="box">
-        <div class="hd"><h2>Что происходит</h2><button class="btn sm dim" onclick="tab('log')">Весь журнал</button></div>
-        <div class="minis" style="margin:0 0 10px">
-          <div class="mini"><img src="/mc/item/emerald.png" alt=""><div><b id="qg">0</b><span>подарков в очереди</span></div></div>
-          <div class="mini"><img src="/mc/item/zombie_spawn_egg.png" alt=""><div><b id="qm">0</b><span>мобов в очереди</span></div></div>
-          <div class="mini"><img id="wicon" src="/mc/item/glowstone_dust.png" alt=""><div><b id="weather">—</b><span>погода</span></div></div>
-        </div>
-        <div class="feed" id="feed"></div>
       </div>
     </div>
-
-    <div class="stack s5">
-      <div class="box">
-        <h2>TikTok LIVE</h2>
+    <div class="card">
+      <div class="head"><h2>TikTok LIVE</h2></div>
+      <div class="body">
         <div class="conn"><i class="dot" id="conn-dot"></i><div style="min-width:0"><b id="conn-title">Нет подключения</b><span id="livestatus"></span></div></div>
-        <label class="f"><span>Ваш ник в TikTok</span><input id="bridge-user" data-k="liveUsername" placeholder="ник без @" autocomplete="off" spellcheck="false" maxlength="64" onkeydown="if(event.key==='Enter')startBridge()"></label>
-        <div class="row" style="margin-top:10px">
-          <button id="bridge-start" class="btn go" onclick="startBridge()"><img src="/mc/item/ender_eye.png" alt="">Подключить</button>
-          <button id="bridge-stop" class="btn dim" onclick="stopBridge()" disabled>Отключить</button>
+        <div class="line"><input id="bridge-user" data-k="liveUsername" placeholder="ваш ник в TikTok, без @" autocomplete="off" spellcheck="false" maxlength="64" onkeydown="if(event.key==='Enter')startBridge()"></div>
+        <div class="grid g-2" style="margin-top:8px;gap:8px">
+          <button id="bridge-start" class="btn go" onclick="startBridge()">Подключить</button>
+          <button id="bridge-stop" class="btn" onclick="stopBridge()" disabled>Отключить</button>
         </div>
-        <p class="small muted" id="bridge-status" role="status" style="margin:10px 0 0">Мост не запущен.</p>
-        <p class="sub" style="margin:8px 0 0">Эфир в TikTok должен уже идти. Нужен Node.js. TikFinity и другие способы — в «Настройки → Подключение».</p>
+        <p class="note" id="bridge-status" role="status" style="margin-top:10px">Мост не запущен.</p>
+        <p class="note" style="margin-top:auto;padding-top:10px">Эфир должен уже идти, нужен Node.js. TikFinity — в «Настройки → Подключение».</p>
       </div>
+    </div>
+  </div>
 
-      <div class="box">
-        <h2>Во время эфира</h2>
-        <div class="conn" id="demo-warn" hidden style="background:#382326"><i class="dot bad"></i><div class="grow" style="min-width:0"><b>Включён демо-режим</b><span>Игра сама шлёт фейковые подарки от «demo_…» — зрители это видят.</span></div><button class="btn sm" onclick="cfg.demoMode=false;syncKey('demoMode');save();syncDemo()">Выключить</button></div>
-        <div class="opt"><div class="lbl">Подсказки на экране<small>«Пиши имя моба», «Подарки двигают машину»</small></div><label class="tg"><input type="checkbox" id="info-quick" aria-label="Подсказки на экране"></label></div>
-        <div class="opt"><div class="lbl">Время суток<small id="time-status" role="status"></small></div>
-          <div class="seg" id="time-modes" role="group" aria-label="Время суток">
-            <button class="btn sm" data-time="DAY" aria-pressed="false" onclick="setTimeOfDay('DAY')">День</button>
-            <button class="btn sm" data-time="NIGHT" aria-pressed="false" onclick="setTimeOfDay('NIGHT')">Ночь</button>
-            <button class="btn sm" data-time="AUTO" aria-pressed="false" onclick="setTimeOfDay('AUTO')">Авто</button>
-          </div></div>
-        <div class="opt"><div class="lbl">Погода</div>
-          <div class="seg">
-            <button class="btn sm" onclick="act('weather',{value:'CLEAR'})">Ясно</button>
-            <button class="btn sm" onclick="act('weather',{value:'RAIN'})">Дождь</button>
-            <button class="btn sm" onclick="act('weather',{value:'THUNDER'})">Гроза</button>
-          </div></div>
-        <div class="sl" style="margin-top:12px"><label for="vol-master">Громкость</label><input type="range" min="0" max="1" step="0.05" id="vol-master" data-k="volMaster"><output data-for="volMaster" data-fmt="pct"></output></div>
+  <div class="grid g-main">
+    <div class="card">
+      <div class="head"><h2>Что происходит</h2>
+        <div class="tools"><span class="qchip">подарков в очереди <b id="qg">0</b></span><span class="qchip">мобов <b id="qm">0</b></span><button class="btn sm ghost" onclick="tab('log')">Весь журнал</button></div></div>
+      <div class="body"><div class="feed" id="feed"></div></div>
+    </div>
+    <div class="stack">
+      <div class="card">
+        <div class="head"><h2>Во время эфира</h2></div>
+        <div class="conn warn" id="demo-warn" hidden><i class="dot bad"></i><div style="min-width:0;flex:1"><b>Включён демо-режим</b><span>Игра сама шлёт фейковые события «demo_…»</span></div><button class="btn sm" onclick="cfg.demoMode=false;syncKey('demoMode');save()">Выключить</button></div>
+        <div class="rows">
+          <div class="r"><div class="l"><b>Подсказки на экране</b></div><div class="c"><label class="tg"><input type="checkbox" id="info-quick" aria-label="Подсказки на экране"></label></div></div>
+          <div class="r"><div class="l"><b>Время суток</b><small id="time-status" role="status"></small></div>
+            <div class="c"><div class="seg" id="time-modes" role="group" aria-label="Время суток">
+              <button class="btn" data-time="DAY" aria-pressed="false" onclick="setTimeOfDay('DAY')">День</button>
+              <button class="btn" data-time="NIGHT" aria-pressed="false" onclick="setTimeOfDay('NIGHT')">Ночь</button>
+              <button class="btn" data-time="AUTO" aria-pressed="false" onclick="setTimeOfDay('AUTO')">Авто</button></div></div></div>
+          <div class="r"><div class="l"><b>Погода</b><small id="weather">—</small></div>
+            <div class="c"><div class="seg">
+              <button class="btn" data-weather="CLEAR" onclick="act('weather',{value:'CLEAR'})">Ясно</button>
+              <button class="btn" data-weather="RAIN" onclick="act('weather',{value:'RAIN'})">Дождь</button>
+              <button class="btn" data-weather="THUNDER" onclick="act('weather',{value:'THUNDER'})">Гроза</button></div></div></div>
+          <div class="r"><div class="l"><b>Громкость</b></div><div class="c"><div class="range"><input type="range" min="0" max="1" step="0.05" id="vol-master" data-k="volMaster" aria-label="Громкость"><output data-for="volMaster" data-fmt="pct"></output></div></div></div>
+        </div>
       </div>
-
-      <div class="box">
-        <div class="hd"><h2>Помогли больше всех</h2><button class="btn sm dim" onclick="if(confirm('Сбросить топ помощников?'))act('resetTop')">Сбросить</button></div>
-        <div id="top-list" class="small muted">Пока никого — топ появится после первых подарков.</div>
-        <p class="sub" id="quiet-status" style="margin:10px 0 0"></p>
+      <div class="card fill">
+        <div class="head"><h2>Помогли больше всех</h2><button class="btn sm ghost" onclick="if(confirm('Сбросить топ помощников?'))act('resetTop')">Сбросить</button></div>
+        <div class="rows leaders" id="top-list"><p class="note">Появится после первых подарков.</p></div>
+        <p class="note" id="quiet-status" style="margin-top:auto;padding-top:10px"></p>
       </div>
     </div>
   </div>
@@ -266,59 +316,52 @@ details summary{cursor:pointer;color:var(--muted);font-size:13px;margin-top:4px}
 
 <!-- ТЕСТ -->
 <section class="page" id="p-test">
-  <div class="cols">
-    <div class="stack s7">
-      <div class="box">
-        <div class="hd"><h2>Подарки — нажмите, чтобы отправить</h2>
-          <div class="row"><label class="small muted" for="tgcount">Штук</label><input id="tgcount" type="number" value="1" min="1" max="999" style="width:70px"></div></div>
-        <div class="tiles scroll" id="gift-tiles"></div>
-        <div class="sep"></div>
-        <div class="row">
-          <span class="small muted">Подарок не из таблицы, цена</span>
-          <input id="tprice" type="number" value="10" min="1" style="width:90px">
-          <button class="btn sm" onclick="sendUnknownGift()">Отправить</button>
-        </div>
+  <div class="grid g-main">
+    <div class="stack">
+      <div class="card">
+        <div class="head"><h2>Подарки</h2>
+          <div class="tools"><span class="small muted">штук</span><input id="tgcount" type="number" value="1" min="1" max="999" style="width:72px" aria-label="Количество подарков"></div></div>
+        <div class="tiles" id="gift-tiles"></div>
+        <div class="r" style="margin-top:10px"><div class="l"><b>Подарок не из таблицы</b><small>Сработает как подарок той же цены</small></div>
+          <div class="c"><div class="num"><input id="tprice" type="number" value="10" min="1" aria-label="Цена"><span>💎</span></div><button class="btn" onclick="sendUnknownGift()">Отправить</button></div></div>
       </div>
-      <div class="box">
-        <div class="hd"><h2>Мобы</h2><input id="tmobq" placeholder="поиск: крипер, cow…" style="width:220px" oninput="renderMobTiles()"></div>
-        <div class="tiles scroll" id="mob-tiles"></div>
-        <div class="row" style="margin-top:10px"><button class="btn sm" onclick="randomMob()"><img src="/mc/item/ender_pearl.png" alt="">Случайный моб</button>
-          <button class="btn sm" onclick="testHorde()"><img src="/mc/item/zombie_head.png" alt="" onerror="this.remove()">Тест орды</button></div>
+      <div class="card fill">
+        <div class="head"><h2>Мобы</h2><div class="tools"><input id="tmobq" class="search" placeholder="поиск: крипер, cow…" oninput="renderMobTiles()"></div></div>
+        <div class="tiles" id="mob-tiles"></div>
+        <div class="grid g-2" style="margin-top:10px;gap:8px">
+          <button class="btn" onclick="randomMob()"><img src="/mc/item/ender_pearl.png" alt="">Случайный моб</button>
+          <button class="btn" onclick="testHorde()"><img src="/mc/item/zombie_head.png" alt="" onerror="this.remove()">Орда</button>
+        </div>
       </div>
     </div>
-    <div class="stack s5">
-      <div class="box">
-        <h2>От имени зрителя</h2>
-        <label class="f"><span>Ник</span><input id="tuser" value="тестер"></label>
-        <div class="opt" style="margin-top:8px"><div class="lbl">Демо-режим<small>Случайные подарки, мобы и лайки от «demo_…» каждые 2–6 с. Не включайте в эфире.</small></div><label class="tg"><input type="checkbox" data-k="demoMode" aria-label="Демо-режим"></label></div>
-      </div>
-      <div class="box">
-        <h2>Лайки и подписки</h2>
-        <div class="row">
-          <button class="btn" onclick="test({type:'like',count:100})"><img src="/mc/item/apple.png" alt="">+100 лайков</button>
-          <button class="btn" onclick="test({type:'like',count:500})"><img src="/mc/item/golden_apple.png" alt="">+500</button>
+    <div class="stack">
+      <div class="card">
+        <div class="head"><h2>От имени зрителя</h2></div>
+        <div class="rows">
+          <div class="r"><div class="l"><b>Ник</b></div><div class="c"><input id="tuser" value="тестер" aria-label="Ник зрителя"></div></div>
+          <div class="r"><div class="l"><b>Чат</b></div><div class="c"><input id="tchat" placeholder="например «крипер»" onkeydown="if(event.key==='Enter')sendChat()" aria-label="Сообщение"><button class="btn" onclick="sendChat()">→</button></div></div>
+          <div class="r"><div class="l"><b>Демо-режим</b><small>Фейковые события каждые 2–6 с. Не для эфира</small></div><div class="c"><label class="tg"><input type="checkbox" data-k="demoMode" aria-label="Демо-режим"></label></div></div>
         </div>
-        <div class="row">
+      </div>
+      <div class="card">
+        <div class="head"><h2>Лайки и подписки</h2></div>
+        <div class="btns">
+          <button class="btn" onclick="test({type:'like',count:100})"><img src="/mc/item/apple.png" alt="">+100 лайков</button>
+          <button class="btn" onclick="test({type:'like',count:500})"><img src="/mc/item/golden_apple.png" alt="">+500 лайков</button>
           <button class="btn" onclick="test({type:'follow'})"><img src="/mc/item/lime_dye.png" alt="">Подписка</button>
           <button class="btn" onclick="test({type:'subscribe'})"><img src="/mc/item/magenta_dye.png" alt="">Платная</button>
           <button class="btn" onclick="test({type:'share'})"><img src="/mc/item/paper.png" alt="">Репост</button>
         </div>
       </div>
-      <div class="box">
-        <h2>Чат</h2>
-        <div class="row"><input id="tchat" class="grow" placeholder="например «крипер»" onkeydown="if(event.key==='Enter')sendChat()"><button class="btn" onclick="sendChat()">Отправить</button></div>
-      </div>
-      <div class="box">
-        <h2>Большие события</h2>
-        <div class="row">
-          <button class="btn warn" onclick="test({type:'ultraPlus'})"><img src="/mc/item/nether_star.png" alt="">Ультра +</button>
+      <div class="card fill">
+        <div class="head"><h2>Большие события</h2></div>
+        <div class="btns">
+          <button class="btn gold" onclick="test({type:'ultraPlus'})"><img src="/mc/item/nether_star.png" alt="">Ультра +</button>
           <button class="btn brand" onclick="test({type:'ultraMinus'})"><img src="/mc/item/fire_charge.png" alt="">Ультра −</button>
           <button class="btn" onclick="test({type:'victory'})"><img src="/mc/item/firework_rocket.png" alt="">Победа</button>
         </div>
-        <div class="row">
-          <input id="tmeters" type="number" value="500" style="width:110px">
-          <button class="btn dim" onclick="test({type:'meters',count:+val('tmeters')})">± метры</button>
-        </div>
+        <div class="r" style="margin-top:10px"><div class="l"><b>Метры вручную</b></div>
+          <div class="c"><div class="num"><input id="tmeters" type="number" value="500" aria-label="Метры"><span>м</span></div><button class="btn" onclick="test({type:'meters',count:+val('tmeters')})">±</button></div></div>
       </div>
     </div>
   </div>
@@ -326,179 +369,199 @@ details summary{cursor:pointer;color:var(--muted);font-size:13px;margin-top:4px}
 
 <!-- ПОДАРКИ -->
 <section class="page" id="p-gifts">
-  <div class="cols">
-    <div class="box s12">
-      <div class="hd"><h2>Таблица подарков</h2>
-        <div class="row"><input id="giftq" placeholder="поиск" style="width:200px" oninput="renderGifts()"><button class="btn sm" onclick="addGift()">+ Добавить</button><button class="btn dim sm" onclick="sortGifts()">По цене</button></div></div>
-      <p class="sub">Плюс толкает машину вперёд, от 2 000 м — нитро. Минус отбрасывает назад, от 10 000 м — с кувырком. Подарок не из таблицы работает как подарок той же цены.</p>
-      <div class="tbl gifts-tbl"><table><thead><tr><th></th><th>Название в TikTok</th><th>По-русски</th><th>Цена 💎</th><th>Метры</th><th>Эффект</th><th>В подсказках</th><th></th></tr></thead><tbody id="gifts"></tbody></table></div>
-    </div>
-    <div class="box s4">
-      <h2>Очередь подарков</h2>
-      <div class="opt"><div class="lbl">Очередь с приоритетом<small>Дорогие первыми, дешёвые склеиваются</small></div><label class="tg"><input type="checkbox" data-k="giftQueue"></label></div>
-      <div class="fields" style="margin-top:10px">
-        <label class="f"><span>Время на подарок, ×</span><input type="number" step="0.1" data-k="giftSpotlightScale"></label>
-        <label class="f"><span>Пауза между, с</span><input type="number" min="0" max="30" step="0.1" data-k="giftCooldownSeconds"></label>
-        <label class="f"><span>Максимум в очереди</span><input type="number" data-k="maxQueuedGifts"></label>
+  <div class="card">
+    <div class="head"><h2>Таблица подарков</h2>
+      <div class="tools"><input id="giftq" class="search" placeholder="поиск" oninput="renderGifts()"><button class="btn sm ghost" onclick="sortGifts()">По цене</button><button class="btn sm" onclick="addGift()">+ Добавить</button></div></div>
+    <p class="note" style="margin-bottom:10px">Плюс — вперёд, от 2 000 м нитро, от 10 000 м машину забрасывает далеко вперёд. Минус — назад, от 10 000 м с кувырком.</p>
+    <div class="tbl"><table><thead><tr><th></th><th>Название в TikTok</th><th>По-русски</th><th>Цена 💎</th><th>Метры</th><th>Эффект</th><th>В подсказках</th><th></th></tr></thead><tbody id="gifts"></tbody></table></div>
+  </div>
+  <div class="grid g-3">
+    <div class="card">
+      <div class="head"><h2>Очередь</h2></div>
+      <div class="rows">
+        <div class="r"><div class="l"><b>Очередь по цене</b><small>Дорогие первыми, дешёвые склеиваются</small></div><div class="c auto"><label class="tg"><input type="checkbox" data-k="giftQueue"></label></div></div>
+        <div class="r"><div class="l"><b>Время на подарок</b></div><div class="c auto" style="width:120px"><div class="num"><input type="number" step="0.1" data-k="giftSpotlightScale"><span>×</span></div></div></div>
+        <div class="r"><div class="l"><b>Пауза между</b></div><div class="c auto" style="width:120px"><div class="num"><input type="number" min="0" max="30" step="0.1" data-k="giftCooldownSeconds"><span>с</span></div></div></div>
+        <div class="r"><div class="l"><b>Максимум в очереди</b></div><div class="c auto" style="width:120px"><div class="num"><input type="number" data-k="maxQueuedGifts"><span></span></div></div></div>
       </div>
     </div>
-    <div class="box s4">
-      <h2>Лайки и подписки</h2>
-      <div class="fields">
-        <label class="f"><span>Каждые N лайков</span><input type="number" data-k="likesPerTrigger" min="1"></label>
-        <label class="f"><span>дают метров</span><input type="number" data-k="metersPerLikeTrigger"></label>
+    <div class="card">
+      <div class="head"><h2>Лайки и подписки</h2></div>
+      <div class="rows">
+        <div class="r"><div class="l"><b>Каждые N лайков</b></div><div class="c auto" style="width:120px"><div class="num"><input type="number" min="1" data-k="likesPerTrigger"><span></span></div></div></div>
+        <div class="r"><div class="l"><b>дают</b></div><div class="c auto" style="width:120px"><div class="num"><input type="number" data-k="metersPerLikeTrigger"><span>м</span></div></div></div>
+        <div class="r"><div class="l"><b>Подписка — новый цвет</b></div><div class="c auto"><label class="tg"><input type="checkbox" data-k="colorOnFollow"></label></div></div>
+        <div class="r"><div class="l"><b>Платная подписка</b></div><div class="c auto"><label class="tg"><input type="checkbox" data-k="colorOnSubscribe"></label></div></div>
+        <div class="r"><div class="l"><b>Репост</b></div><div class="c auto"><label class="tg"><input type="checkbox" data-k="colorOnShare"></label></div></div>
+        <div class="r"><div class="l"><b>Между сменами цвета</b></div><div class="c auto" style="width:120px"><div class="num"><input type="number" data-k="colorCooldownSeconds"><span>с</span></div></div></div>
       </div>
-      <div class="sep"></div>
-      <div class="opt"><div class="lbl">Подписка — новый цвет машины</div><label class="tg"><input type="checkbox" data-k="colorOnFollow"></label></div>
-      <div class="opt"><div class="lbl">Платная подписка — тоже</div><label class="tg"><input type="checkbox" data-k="colorOnSubscribe"></label></div>
-      <div class="opt"><div class="lbl">Репост — тоже</div><label class="tg"><input type="checkbox" data-k="colorOnShare"></label></div>
-      <div class="row" style="margin-top:8px"><input type="number" data-k="colorCooldownSeconds" style="width:80px"><span class="muted small">с между сменами цвета</span></div>
     </div>
-    <div class="box s4">
-      <h2>Ультраподарки</h2>
-      <div class="fields">
-        <label class="f"><span>Плюс (через запятую)</span><input data-k="ultraPlusGift"></label>
-        <label class="f"><span>Минус (через запятую)</span><input data-k="ultraMinusGift"></label>
-        <label class="f"><span>Величина, м</span><input type="number" data-k="ultraAmount"></label>
+    <div class="card">
+      <div class="head"><h2>Ультраподарки</h2><div class="tools" id="ultra-icons"></div></div>
+      <div class="rows">
+        <div class="r"><div class="l"><b>Плюс</b></div><div class="c" style="width:58%"><input data-k="ultraPlusGift" aria-label="Ультра плюс"></div></div>
+        <div class="r"><div class="l"><b>Минус</b></div><div class="c" style="width:58%"><input data-k="ultraMinusGift" aria-label="Ультра минус"></div></div>
+        <div class="r"><div class="l"><b>Величина</b></div><div class="c" style="width:58%"><div class="num"><input type="number" data-k="ultraAmount"><span>м</span></div></div></div>
+        <div class="r"><div class="l"><b>Неизвестные — по цене</b></div><div class="c auto"><label class="tg"><input type="checkbox" data-k="unknownGiftFallback"></label></div></div>
       </div>
-      <div class="sep"></div>
-      <div class="opt"><div class="lbl">Неизвестные — по цене</div><label class="tg"><input type="checkbox" data-k="unknownGiftFallback"></label></div>
-      <div class="small muted unknown" id="unknown">—</div>
+      <div class="unknown" id="unknown"></div>
     </div>
   </div>
 </section>
 
 <!-- МОБЫ -->
 <section class="page" id="p-mobs">
-  <div class="cols">
-    <div class="box s12">
-      <h2>Ограничения</h2>
-      <div class="fields">
-        <label class="f"><span>Пауза зрителя, с</span><input type="number" data-k="chatCooldownSeconds"></label>
-        <label class="f"><span>Пауза сильных мобов, с</span><input type="number" data-k="strongMobCooldownSeconds" min="0" max="300" step="1"></label>
-        <label class="f"><span>Мобов в очереди от одного</span><input type="number" data-k="maxPendingPerViewer"></label>
-        <label class="f"><span>Мобов на экране</span><input type="number" data-k="maxActiveMobs"></label>
-        <label class="f"><span>Очередь всего</span><input type="number" data-k="maxQueuedMobs"></label>
-        <label class="f"><span>Множитель потерь</span><input type="number" step="0.1" data-k="mobPenaltyMultiplier"></label>
-      </div>
-      <div class="opt" style="margin-top:8px"><div class="lbl">Искать моба внутри сообщения<small>«давай крипера» тоже сработает</small></div><label class="tg"><input type="checkbox" data-k="chatMatchInsideMessage"></label></div>
+  <div class="card">
+    <div class="head"><h2>Ограничения</h2></div>
+    <div class="rows cols">
+      <div class="r"><div class="l"><b>Пауза одного зрителя</b></div><div class="c auto" style="width:120px"><div class="num"><input type="number" data-k="chatCooldownSeconds"><span>с</span></div></div></div>
+      <div class="r"><div class="l"><b>Пауза сильных мобов</b><small>Дракон, иссушитель, варден…</small></div><div class="c auto" style="width:120px"><div class="num"><input type="number" min="0" max="300" step="1" data-k="strongMobCooldownSeconds"><span>с</span></div></div></div>
+      <div class="r"><div class="l"><b>В очереди от одного зрителя</b></div><div class="c auto" style="width:120px"><div class="num"><input type="number" data-k="maxPendingPerViewer"><span></span></div></div></div>
+      <div class="r"><div class="l"><b>Мобов на экране</b></div><div class="c auto" style="width:120px"><div class="num"><input type="number" data-k="maxActiveMobs"><span></span></div></div></div>
+      <div class="r"><div class="l"><b>Очередь всего</b></div><div class="c auto" style="width:120px"><div class="num"><input type="number" data-k="maxQueuedMobs"><span></span></div></div></div>
+      <div class="r"><div class="l"><b>Множитель потерь</b></div><div class="c auto" style="width:120px"><div class="num"><input type="number" step="0.1" data-k="mobPenaltyMultiplier"><span>×</span></div></div></div>
+      <div class="r"><div class="l"><b>Искать моба внутри сообщения</b><small>«давай крипера» тоже сработает</small></div><div class="c auto"><label class="tg"><input type="checkbox" data-k="chatMatchInsideMessage"></label></div></div>
     </div>
-    <div class="box s12">
-      <div class="hd"><h2>Мобы <span class="muted small" id="mobcount"></span></h2></div>
-      <div class="filter">
-        <input id="mobsearch" placeholder="поиск: корова, cow, крипер…" oninput="renderMobs()">
-        <div class="seg" id="mobfilter"><button class="btn sm" data-f="all">Все</button><button class="btn sm" data-f="help">Помогают</button><button class="btn sm" data-f="hurt">Мешают</button></div>
+  </div>
+  <div class="card">
+    <div class="head"><h2>Мобы <span class="muted" id="mobcount" style="text-transform:none;letter-spacing:0;font-weight:500"></span></h2>
+      <div class="tools"><input id="mobsearch" class="search" placeholder="поиск: корова, cow…" oninput="renderMobs()">
+        <div class="seg" id="mobfilter" style="width:auto"><button class="btn" data-f="all">Все</button><button class="btn" data-f="help">Помогают</button><button class="btn" data-f="hurt">Мешают</button></div></div></div>
+    <div class="tbl"><table><thead><tr><th></th><th>Вкл</th><th>Моб</th><th>Роль</th><th>Метры</th><th>Сила</th><th>Как писать в чат</th><th></th></tr></thead><tbody id="mobs"></tbody></table></div>
+  </div>
+</section>
+
+<!-- ИНТЕРФЕЙС -->
+<section class="page" id="p-ui">
+  <div class="grid g-main">
+    <div class="card">
+      <div class="head"><h2>Экран игры</h2>
+        <div class="tools">
+          <label class="tg small"><input type="checkbox" id="ui-zones"><span>Зоны TikTok</span></label>
+          <label class="tg small"><input type="checkbox" id="ui-snap" checked><span>Привязка к центру</span></label>
+        </div></div>
+      <p class="note" style="margin-bottom:12px">Тяните блок мышкой. Жёлтый кружок — размер. Стрелки на клавиатуре — точный сдвиг.</p>
+      <div class="stage-wrap"><div class="stage" id="stage" tabindex="0" aria-label="Макет экрана игры">
+        <div class="car"></div>
+        <div class="zone" style="left:0;top:0;width:100%;height:8.5%">шапка TikTok</div>
+        <div class="zone" style="left:86%;top:44%;width:14%;height:34%">кнопки</div>
+        <div class="zone" style="left:0;top:66%;width:72%;height:26%">чат зрителей</div>
+        <div class="zone" style="left:0;top:92%;width:100%;height:8%">строка ввода</div>
+        <div class="guide"></div>
+        <div class="stage-msg" id="stage-msg">Запустите игру (F6 или «Старт») — блоки появятся здесь.</div>
+      </div></div>
+      <p class="note" id="ui-status" role="status" style="margin-top:10px"></p>
+    </div>
+    <div class="stack">
+      <div class="card">
+        <div class="head"><h2 id="ui-name">Блок</h2><button class="btn sm ghost" onclick="uiReset(uiSel)">Сбросить</button></div>
+        <div class="rows">
+          <div class="r"><div class="l"><b>Показывать</b></div><div class="c"><label class="tg"><input type="checkbox" id="ui-visible" aria-label="Показывать блок"></label></div></div>
+          <div class="r"><div class="l"><b>По горизонтали</b></div><div class="c"><div class="range"><input type="range" id="ui-x" min="-100" max="100" step="0.25"><output id="ui-x-o"></output></div></div></div>
+          <div class="r"><div class="l"><b>По вертикали</b></div><div class="c"><div class="range"><input type="range" id="ui-y" min="-100" max="100" step="0.25"><output id="ui-y-o"></output></div></div></div>
+          <div class="r"><div class="l"><b>Размер</b></div><div class="c"><div class="range"><input type="range" id="ui-scale" min="0.4" max="2.5" step="0.05"><output id="ui-scale-o"></output></div></div></div>
+          <div class="r"><div class="l"><b>Непрозрачность</b></div><div class="c"><div class="range"><input type="range" id="ui-opacity" min="0.15" max="1" step="0.05"><output id="ui-opacity-o"></output></div></div></div>
+          <div class="r"><div class="l"><b>Выравнивание</b></div><div class="c"><button class="btn sm" style="width:100%" onclick="uiCenter()">По центру экрана</button></div></div>
+        </div>
       </div>
-      <div class="tbl mobs"><table><thead><tr><th></th><th>Вкл</th><th>Моб</th><th>Роль</th><th>Метры</th><th>Сила</th><th>Как писать в чат</th><th></th></tr></thead><tbody id="mobs"></tbody></table></div>
+      <div class="card fill">
+        <div class="head"><h2>Все блоки</h2><button class="btn sm ghost" onclick="if(confirm('Вернуть все блоки на места по умолчанию?'))uiResetAll()">Сбросить всё</button></div>
+        <div class="rows ellist" id="ui-list"></div>
+        <div class="r" style="margin-top:6px"><div class="l"><b>Весь интерфейс</b></div>
+          <div class="c"><div class="seg"><button class="btn" onclick="uiScaleAll(0.85)">Мельче</button><button class="btn" onclick="uiScaleAll(1)">Обычно</button><button class="btn" onclick="uiScaleAll(1.15)">Крупнее</button></div></div></div>
+      </div>
     </div>
   </div>
 </section>
 
 <!-- НАСТРОЙКИ -->
 <section class="page" id="p-settings">
-  <div class="cols">
-    <div class="stack s6">
-      <div class="box">
-        <h2>Камера</h2>
-        <div class="sl"><label>Расстояние</label><input type="range" min="6" max="30" step="0.5" data-k="cameraDistance"><output data-for="cameraDistance"></output></div>
-        <div class="sl"><label>Ширина кадра</label><input type="range" min="14" max="60" step="0.5" data-k="viewWidth"><output data-for="viewWidth"></output></div>
-        <div class="sl"><label>Высота</label><input type="range" min="-6" max="10" step="0.5" data-k="cameraHeight"><output data-for="cameraHeight" data-fmt="signed"></output></div>
-      </div>
-      <div class="box">
-        <h2>Машина</h2>
-        <div class="row"><input type="color" id="carcolor" aria-label="Цвет машины"><div class="seg" id="swatches"></div></div>
-      </div>
-      <div class="box">
-        <h2>Счётчики сверху экрана</h2>
-        <p class="sub">Метры, победы и лайки двигаются одним блоком.</p>
-        <div class="row" style="align-items:flex-start;gap:18px">
-          <div class="pad">
-            <button class="btn" style="grid-column:2;grid-row:1" onclick="moveHud(0,-1)" aria-label="Вверх">▲</button>
-            <button class="btn" style="grid-column:1;grid-row:2" onclick="moveHud(-1,0)" aria-label="Влево">◀</button>
-            <button class="btn c sm" onclick="resetHud()" title="Сбросить">⟲</button>
-            <button class="btn" style="grid-column:3;grid-row:2" onclick="moveHud(1,0)" aria-label="Вправо">▶</button>
-            <button class="btn" style="grid-column:2;grid-row:3" onclick="moveHud(0,1)" aria-label="Вниз">▼</button>
-          </div>
-          <div class="grow">
-            <div class="sl"><label>Размер</label><input type="range" min="0.5" max="2" step="0.05" data-k="hudScale"><output data-for="hudScale" data-fmt="x"></output></div>
-            <p class="small muted" style="margin:6px 0 0">Сдвиг: <span id="hudpos">0 / 0</span> %</p>
-          </div>
+  <div class="settings">
+    <nav class="menu" id="set-menu">
+      <a href="#s-run">Заезд</a><a href="#s-screen">Экран</a><a href="#s-camera">Камера и машина</a><a href="#s-window">Окно эфира</a>
+      <a href="#s-host">Ведущий и зрители</a><a href="#s-sound">Звук</a><a href="#s-connect">Подключение</a><a href="#s-start">Запуск</a>
+    </nav>
+    <div class="stack">
+      <div class="card" id="s-run">
+        <div class="head"><h2>Заезд</h2></div>
+        <div class="rows">
+          <div class="r"><div class="l"><b>Цель</b></div><div class="c"><div class="num"><input type="number" data-k="goal"><span>м</span></div></div></div>
+          <div class="r"><div class="l"><b>Метров за блок</b></div><div class="c"><div class="num"><input type="number" step="0.1" data-k="metersPerBlock"><span></span></div></div></div>
+          <div class="r"><div class="l"><b>Скорость</b></div><div class="c"><div class="num"><input type="number" step="0.5" data-k="cruiseSpeed"><span>бл/с</span></div></div></div>
+          <div class="r"><div class="l"><b>Длина суток</b></div><div class="c"><div class="num"><input type="number" data-k="dayLengthMinutes"><span>мин</span></div></div></div>
+          <div class="r"><div class="l"><b>Смена погоды</b></div><div class="c"><label class="tg"><input type="checkbox" data-k="autoWeather"></label></div></div>
+          <div class="r"><div class="l"><b>Победы и статистика</b></div><div class="c"><button class="btn sm danger" style="width:100%" onclick="if(confirm('Сбросить победы и статистику?'))act('resetStats')">Сбросить</button></div></div>
         </div>
       </div>
-      <div class="box">
-        <h2>Подсказки на экране</h2>
-        <div class="opt"><div class="lbl">Показывать подсказки</div><label class="tg"><input type="checkbox" data-k="showInfoCard"></label></div>
-        <div class="row" style="margin-top:8px"><input type="number" data-k="infoCardPauseSeconds" style="width:80px"><span class="muted small">с пауза между показами</span></div>
-      </div>
-    </div>
-
-    <div class="stack s6">
-      <div class="box">
-        <h2>Ведущий и зрители</h2>
-        <div class="opt"><div class="lbl">Стив и Алекс комментируют<small>Облачка с репликами: благодарят, пугаются, радуются</small></div><label class="tg"><input type="checkbox" data-k="hostEnabled"></label></div>
-        <div class="opt"><div class="lbl">Топ-3 помощников на экране<small>Кто дал больше всего метров за эфир</small></div><label class="tg"><input type="checkbox" data-k="topHelpersEnabled"></label></div>
-        <div class="sep"></div>
-        <div class="opt"><div class="lbl">Командные мобы (орда)<small>Несколько зрителей пишут одного моба — выходит орда</small></div><label class="tg"><input type="checkbox" data-k="hordeEnabled"></label></div>
-        <div class="fields" style="margin-top:8px">
-          <label class="f"><span>Сколько зрителей</span><input type="number" min="2" max="50" data-k="hordeViewers"></label>
-          <label class="f"><span>За сколько секунд</span><input type="number" min="3" max="120" data-k="hordeWindowSeconds"></label>
-          <label class="f"><span>Мобов в орде</span><input type="number" min="2" max="6" data-k="hordeSize"></label>
+      <div class="card" id="s-screen">
+        <div class="head"><h2>Экран</h2><button class="btn sm" onclick="tab('ui')">Расположение блоков →</button></div>
+        <div class="rows">
+          <div class="r"><div class="l"><b>Подсказки</b><small>«Пиши в чат…», подарки, ультраподарки</small></div><div class="c"><label class="tg"><input type="checkbox" data-k="showInfoCard"></label></div></div>
+          <div class="r"><div class="l"><b>Пауза между показами подсказок</b></div><div class="c"><div class="num"><input type="number" data-k="infoCardPauseSeconds"><span>с</span></div></div></div>
+          <div class="r"><div class="l"><b>Баннер дорогого подарка</b><small>От 2 000 м — крупно на месте подсказок</small></div><div class="c"><label class="tg"><input type="checkbox" data-k="giftBanner"></label></div></div>
+          <div class="r"><div class="l"><b>Строк в ленте событий</b><small>0 — выключить</small></div><div class="c"><div class="num"><input type="number" min="0" max="5" data-k="feedRows"><span></span></div></div></div>
+          <div class="r"><div class="l"><b>Строка ленты видна</b></div><div class="c"><div class="num"><input type="number" min="3" max="120" data-k="feedSeconds"><span>с</span></div></div></div>
+          <div class="r"><div class="l"><b>Топ-3 помощников</b></div><div class="c"><label class="tg"><input type="checkbox" data-k="topHelpersEnabled"></label></div></div>
         </div>
-        <div class="sep"></div>
-        <div class="opt"><div class="lbl">Тихий чат<small>Если долго тихо: вопросы зрителям, погода, мирные мобы. Без фейковых подарков</small></div><label class="tg"><input type="checkbox" data-k="quietChat"></label></div>
-        <div class="fields" style="margin-top:8px">
-          <label class="f"><span>Тихо дольше, с</span><input type="number" min="30" max="3600" data-k="quietSeconds"></label>
-          <label class="f"><span>Повторять каждые, с</span><input type="number" min="20" max="3600" data-k="quietIntervalSeconds"></label>
+      </div>
+      <div class="card" id="s-camera">
+        <div class="head"><h2>Камера и машина</h2></div>
+        <div class="rows">
+          <div class="r"><div class="l"><b>Расстояние</b></div><div class="c"><div class="range"><input type="range" min="6" max="30" step="0.5" data-k="cameraDistance"><output data-for="cameraDistance"></output></div></div></div>
+          <div class="r"><div class="l"><b>Ширина кадра</b></div><div class="c"><div class="range"><input type="range" min="14" max="60" step="0.5" data-k="viewWidth"><output data-for="viewWidth"></output></div></div></div>
+          <div class="r"><div class="l"><b>Высота</b></div><div class="c"><div class="range"><input type="range" min="-6" max="10" step="0.5" data-k="cameraHeight"><output data-for="cameraHeight" data-fmt="signed"></output></div></div></div>
+          <div class="r"><div class="l"><b>Цвет машины</b></div><div class="c auto"><div class="swatches" id="swatches"></div><input type="color" id="carcolor" aria-label="Цвет машины"></div></div>
         </div>
-        <div class="opt" style="margin-top:6px"><div class="lbl">Мирные мобы сами приходят</div><label class="tg"><input type="checkbox" data-k="quietAmbientMobs"></label></div>
       </div>
-      <div class="box">
-        <h2>Окно для эфира</h2>
-        <div class="row"><button class="btn brand" onclick="win(1080,1920)">9:16 · вписать в монитор</button></div>
-        <div class="row">
-          <button class="btn sm" onclick="win(1080,1920,false)">1080×1920</button>
-          <button class="btn sm" onclick="win(720,1280)">720×1280</button>
-          <button class="btn sm" onclick="win(1920,1080)">16:9</button>
+      <div class="card" id="s-window">
+        <div class="head"><h2>Окно эфира</h2></div>
+        <div class="rows">
+          <div class="r"><div class="l"><b>Вертикально</b><small>Самое большое окно 9:16 на мониторе (F8)</small></div><div class="c"><button class="btn brand" style="width:100%" onclick="win(1080,1920)">9:16 по монитору</button></div></div>
+          <div class="r"><div class="l"><b>Точный размер</b><small>1080×1920 может выйти за монитор — нужен «Захват игры»</small></div>
+            <div class="c"><div class="grid g-3" style="gap:6px;width:100%"><button class="btn sm" onclick="win(1080,1920,false)">1080×1920</button><button class="btn sm" onclick="win(720,1280)">720×1280</button><button class="btn sm" onclick="win(1920,1080)">16:9</button></div></div></div>
         </div>
-        <p class="small aqua" id="capture-status" role="status" style="margin:10px 0 0">Размер захвата появится после подключения к игре.</p>
-        <details><summary>Как настроить захват</summary>
-          <p class="sub" style="margin:8px 0 0">В OBS или Live Studio: вертикальный холст 1080×1920, «Захват игры» Minecraft, вписать источник в холст. «1080×1920» может выйти за монитор — поэтому захват игры, а не экрана. Клавиши: F6 старт/стоп · F7 пульт · F8 окно 9:16.</p>
-        </details>
+        <p class="note" id="capture-status" role="status" style="color:var(--info);margin-top:6px">Размер окна появится после подключения к игре.</p>
       </div>
-      <div class="box">
-        <h2>Громкость</h2>
-        <div id="vols"></div>
-      </div>
-      <div class="box">
-        <h2>Заезд</h2>
-        <div class="fields">
-          <label class="f"><span>Цель, м</span><input type="number" data-k="goal"></label>
-          <label class="f"><span>Метров за блок</span><input type="number" step="0.1" data-k="metersPerBlock"></label>
-          <label class="f"><span>Скорость, блоков/с</span><input type="number" step="0.5" data-k="cruiseSpeed"></label>
-          <label class="f"><span>Длина суток, мин</span><input type="number" data-k="dayLengthMinutes"></label>
+      <div class="card" id="s-host">
+        <div class="head"><h2>Ведущий и зрители</h2></div>
+        <div class="rows">
+          <div class="r"><div class="l"><b>Стив и Алекс комментируют</b></div><div class="c"><label class="tg"><input type="checkbox" data-k="hostEnabled"></label></div></div>
+          <div class="r"><div class="l"><b>Орда</b><small>Несколько зрителей пишут одного моба</small></div><div class="c"><label class="tg"><input type="checkbox" data-k="hordeEnabled"></label></div></div>
+          <div class="r"><div class="l"><b>Сколько зрителей</b></div><div class="c"><div class="num"><input type="number" min="2" max="50" data-k="hordeViewers"><span></span></div></div></div>
+          <div class="r"><div class="l"><b>За сколько секунд</b></div><div class="c"><div class="num"><input type="number" min="3" max="120" data-k="hordeWindowSeconds"><span>с</span></div></div></div>
+          <div class="r"><div class="l"><b>Мобов в орде</b></div><div class="c"><div class="num"><input type="number" min="2" max="6" data-k="hordeSize"><span></span></div></div></div>
+          <div class="r"><div class="l"><b>Тихий чат</b><small>Когда долго тихо: вопросы, погода, мирные мобы</small></div><div class="c"><label class="tg"><input type="checkbox" data-k="quietChat"></label></div></div>
+          <div class="r"><div class="l"><b>Тихо дольше</b></div><div class="c"><div class="num"><input type="number" min="30" max="3600" data-k="quietSeconds"><span>с</span></div></div></div>
+          <div class="r"><div class="l"><b>Повторять каждые</b></div><div class="c"><div class="num"><input type="number" min="20" max="3600" data-k="quietIntervalSeconds"><span>с</span></div></div></div>
+          <div class="r"><div class="l"><b>Мирные мобы приходят сами</b></div><div class="c"><label class="tg"><input type="checkbox" data-k="quietAmbientMobs"></label></div></div>
         </div>
-        <div class="opt" style="margin-top:8px"><div class="lbl">Смена погоды</div><label class="tg"><input type="checkbox" data-k="autoWeather"></label></div>
-        <div class="sep"></div>
-        <button class="btn dim sm" onclick="if(confirm('Сбросить победы и статистику?'))act('resetStats')"><img src="/mc/item/tnt_minecart.png" alt="">Сбросить победы и статистику</button>
       </div>
-      <div class="box">
-        <h2>Подключение</h2>
-        <div class="opt"><div class="lbl">Принимать события TikTok<small>Выключено — тестовый режим</small></div><label class="tg"><input type="checkbox" data-k="liveEnabled"></label></div>
-        <label class="f" style="margin-top:8px"><span>WebSocket (TikFinity или мост)</span><input data-k="liveWsUrl"></label>
-        <div class="row" style="margin-top:10px"><button class="btn sm" onclick="act('reconnect')">Переподключиться</button></div>
+      <div class="card" id="s-sound">
+        <div class="head"><h2>Звук</h2></div>
+        <div class="rows" id="vols"></div>
+      </div>
+      <div class="card" id="s-connect">
+        <div class="head"><h2>Подключение</h2></div>
+        <div class="rows">
+          <div class="r"><div class="l"><b>Принимать события TikTok</b><small>Выключено — тестовый режим</small></div><div class="c"><label class="tg"><input type="checkbox" data-k="liveEnabled"></label></div></div>
+          <div class="r"><div class="l"><b>WebSocket</b><small>TikFinity или мост</small></div><div class="c"><input data-k="liveWsUrl" aria-label="WebSocket"></div></div>
+          <div class="r"><div class="l"><b>Соединение</b></div><div class="c"><button class="btn sm" style="width:100%" onclick="act('reconnect')">Переподключиться</button></div></div>
+        </div>
         <details><summary>Другие способы подключения</summary>
-          <div class="how" style="margin-top:8px">
-            <div><b>TikFinity.</b> Подключите свой LIVE в TikFinity — игра сама подключится к <code>ws://127.0.0.1:21213/</code>. Встроенный мост при этом не запускайте.</div>
+          <div class="how">
+            <div><b>TikFinity.</b> Подключите LIVE в TikFinity — игра сама подключится к <code>ws://127.0.0.1:21213/</code>. Встроенный мост тогда не запускайте.</div>
             <div><b>Мост вручную.</b> <code>bridge/start-bridge.bat</code> — то же, что кнопка «Подключить».</div>
-            <div><b>HTTP.</b> Streamer.bot и другие программы:<br><code>/api/event?type=gift&amp;user=ник&amp;name=Rose&amp;count=1</code><br><code>/api/event?type=chat&amp;user=ник&amp;text=зомби</code></div>
+            <div><b>HTTP.</b> <code>/api/event?type=gift&amp;user=ник&amp;name=Rose&amp;count=1</code></div>
           </div>
         </details>
       </div>
-      <div class="box">
-        <h2>Запуск</h2>
-        <div class="opt"><div class="lbl">Автостарт в мирах со словами</div><label class="tg"><input type="checkbox" data-k="autoStart"></label></div>
-        <input data-k="autoStartWorldMatch" style="width:100%;margin-top:6px">
-        <div class="fields" style="margin-top:12px"><label class="f"><span>Порт пульта (нужен перезапуск игры)</span><input type="number" data-k="panelPort"></label></div>
+      <div class="card" id="s-start">
+        <div class="head"><h2>Запуск</h2></div>
+        <div class="rows">
+          <div class="r"><div class="l"><b>Автостарт</b><small>Если в названии мира есть одно из слов</small></div><div class="c"><label class="tg"><input type="checkbox" data-k="autoStart"></label></div></div>
+          <div class="r"><div class="l"><b>Слова</b></div><div class="c"><input data-k="autoStartWorldMatch" aria-label="Слова в названии мира"></div></div>
+          <div class="r"><div class="l"><b>Порт пульта</b><small>Нужен перезапуск игры</small></div><div class="c"><div class="num"><input type="number" data-k="panelPort"><span></span></div></div></div>
+        </div>
       </div>
     </div>
   </div>
@@ -506,15 +569,15 @@ details summary{cursor:pointer;color:var(--muted);font-size:13px;margin-top:4px}
 
 <!-- ЖУРНАЛ -->
 <section class="page" id="p-log">
-  <div class="cols">
-    <div class="box s7"><h2>Игра</h2><div class="feed tall" id="log"></div></div>
-    <div class="box s5"><h2>Мост TikTok</h2><div class="feed tall" id="bridge-log">Здесь появятся сообщения моста.</div></div>
+  <div class="grid g-main">
+    <div class="card"><div class="head"><h2>Игра</h2></div><div class="body"><div class="feed tall" id="log"></div></div></div>
+    <div class="card"><div class="head"><h2>Мост TikTok</h2></div><div class="body"><div class="feed tall" id="bridge-log">Здесь появятся сообщения моста.</div></div></div>
   </div>
 </section>
 </main>
 <div class="toast" id="toast" role="status"></div>
 <script>
-let cfg=null, meta=null, saveTimer=null, mobFilter='all', saveVersion=0, savedVersion=0, saveFlight=null, bridgePending=false, infoPending=false, timePending=false, lastStatus=null;
+let currentTab='home', cfg=null, meta=null, saveTimer=null, mobFilter='all', saveVersion=0, savedVersion=0, saveFlight=null, bridgePending=false, infoPending=false, timePending=false, lastStatus=null;
 const $=id=>document.getElementById(id);
 const val=id=>$(id).value;
 const fmt=n=>(n<0?'−':'')+Math.abs(Math.round(n)).toString().replace(/\B(?=(\d{3})+(?!\d))/g,' ');
@@ -555,9 +618,6 @@ function syncKey(k){
   document.querySelectorAll('[data-k="'+k+'"]').forEach(el=>{if(el.type==='checkbox')el.checked=!!cfg[k];else if(document.activeElement!==el)el.value=cfg[k]??'';});
   syncOutputs(k);if(k==='showInfoCard')syncInfo();if(k==='demoMode')syncDemo();
 }
-function syncHud(){['hudOffsetX','hudOffsetY','hudScale'].forEach(syncKey);$('hudpos').textContent=Math.round(cfg.hudOffsetX||0)+' / '+Math.round(cfg.hudOffsetY||0);}
-function moveHud(x,y){if(!cfg)return;cfg.hudOffsetX=Math.max(-100,Math.min(100,(Number(cfg.hudOffsetX)||0)+x));cfg.hudOffsetY=Math.max(-100,Math.min(100,(Number(cfg.hudOffsetY)||0)+y));syncHud();save();}
-function resetHud(){if(!cfg)return;cfg.hudOffsetX=0;cfg.hudOffsetY=0;cfg.hudScale=1;syncHud();save();}
 
 function syncInfo(){
   const visible=!!cfg.showInfoCard;
@@ -596,11 +656,11 @@ function tab(t){
   if(!$('p-'+t))t='home';
   document.querySelectorAll('#tabs .tab').forEach(b=>b.classList.toggle('on',b.dataset.tab===t));
   document.querySelectorAll('.page').forEach(p=>p.classList.toggle('on',p.id==='p-'+t));
-  store.set('rttt.tab',t);
+  store.set('rttt.tab',t);currentTab=t;
 }
 const TAB_ORDER=[...document.querySelectorAll('#tabs .tab')].map(b=>b.dataset.tab);
 document.querySelectorAll('#tabs .tab').forEach(b=>{b.setAttribute('aria-label',b.querySelector('span').textContent);b.onclick=()=>tab(b.dataset.tab);});
-document.addEventListener('keydown',e=>{if(e.target.closest('input,select,textarea')||e.ctrlKey||e.metaKey||e.altKey)return;const i=+e.key-1;if(i>=0&&i<TAB_ORDER.length)tab(TAB_ORDER[i]);});
+document.addEventListener('keydown',e=>{if(e.target.closest('input,select,textarea,.stage')||e.ctrlKey||e.metaKey||e.altKey)return;const i=+e.key-1;if(i>=0&&i<TAB_ORDER.length)tab(TAB_ORDER[i]);});
 tab(store.get('rttt.tab')||'home');
 
 function bind(){
@@ -620,9 +680,9 @@ function bind(){
   const cc=$('carcolor');const setColor=hex=>{cfg.carColor=parseInt(hex.slice(1),16);cc.value=hex;save();};
   cc.value='#'+(cfg.carColor>>>0).toString(16).padStart(6,'0').slice(-6);
   cc.oninput=()=>setColor(cc.value);
-  $('swatches').innerHTML=['#c0392b','#e67e22','#f1c40f','#27ae60','#1abc9c','#2980b9','#8e44ad','#ecf0f1','#2c3e50'].map(c=>`<button class="btn sm" style="width:30px;height:30px;padding:0;background:${c};border-color:${c}" title="${c}" aria-label="Цвет ${c}"></button>`).join('');
+  $('swatches').innerHTML=['#c0392b','#e67e22','#f1c40f','#27ae60','#1abc9c','#2980b9','#8e44ad','#ecf0f1','#2c3e50'].map(c=>`<button style="background:${c}" title="${c}" aria-label="Цвет ${c}"></button>`).join('');
   $('swatches').querySelectorAll('button').forEach(b=>b.onclick=()=>setColor(b.title));
-  syncOutputs();syncHud();syncInfo();syncTime();
+  syncOutputs();syncInfo();syncTime();uiInit();
 }
 
 function effOptions(sel){return [...meta.positiveEffects,...meta.negativeEffects].map(e=>`<option ${e===sel?'selected':''}>${e}</option>`).join('');}
@@ -633,22 +693,27 @@ function renderGifts(){
   const q=(val('giftq')||'').toLowerCase();
   $('gifts').innerHTML=cfg.gifts.map((g,i)=>({g,i})).filter(({g})=>!q||(g.name+' '+(g.ru||'')).toLowerCase().includes(q)).map(({g,i})=>`<tr>
    <td><div class="icon-slot">${giftImg(g)}</div></td>
-   <td><input value="${esc(g.name)}" onchange="cfg.gifts[${i}].name=this.value;save();renderGiftTiles()"></td>
-   <td><input value="${esc(g.ru)}" onchange="cfg.gifts[${i}].ru=this.value;save();renderGiftTiles()"></td>
+   <td><input class="name" value="${esc(g.name)}" onchange="cfg.gifts[${i}].name=this.value;save();renderGiftTiles()"></td>
+   <td><input class="name" value="${esc(g.ru)}" onchange="cfg.gifts[${i}].ru=this.value;save();renderGiftTiles()"></td>
    <td><input type="number" style="width:80px" value="${g.coins||0}" onchange="cfg.gifts[${i}].coins=Number(this.value);save();renderGiftTiles()"></td>
    <td><input type="number" class="${g.meters<0?'neg':'pos'}" value="${g.meters}" onchange="cfg.gifts[${i}].meters=Number(this.value);this.className=this.value<0?'neg':'pos';save();renderGiftTiles()"></td>
    <td><select onchange="cfg.gifts[${i}].effect=this.value;save()">${effOptions(g.effect)}</select></td>
    <td><label class="tg"><input type="checkbox" ${g.showInOverlay!==false?'checked':''} onchange="cfg.gifts[${i}].showInOverlay=this.checked;save()" aria-label="Показывать в подсказках"></label></td>
-   <td><button class="btn dim ico sm" title="Удалить" onclick="if(confirm('Удалить подарок?')){cfg.gifts.splice(${i},1);save();renderGifts();renderGiftTiles()}">✕</button></td></tr>`).join('');
+   <td><button class="btn ghost sm" title="Удалить" onclick="if(confirm('Удалить подарок?')){cfg.gifts.splice(${i},1);save();renderGifts();renderGiftTiles()}">✕</button></td></tr>`).join('');
 }
 function sortGifts(){cfg.gifts.sort((a,b)=>(a.coins||0)-(b.coins||0)||(a.meters-b.meters));save();renderGifts();renderGiftTiles();}
 function addGift(name){cfg.gifts.push({name:name||'Новый подарок',ru:'',coins:1,meters:100,effect:'SPARKLE',image:'',showInOverlay:true});save();$('giftq').value='';renderGifts();renderGiftTiles();tab('gifts');}
 function renderGiftTiles(){
   const list=[...cfg.gifts].sort((a,b)=>(a.coins||0)-(b.coins||0));
-  const ultra=[[cfg.ultraPlusGift,'Ультра +','nether_star','pos'],[cfg.ultraMinusGift,'Ультра −','fire_charge','neg']].map(([n,l,ic,c])=>({name:(n||'').split(',')[0].trim(),label:l,ic,c})).filter(u=>u.name);
+  const ultra=ultraList();
   $('gift-tiles').innerHTML=list.map(g=>`<button class="tile" data-gift="${esc(g.name)}" title="${esc(g.name)}">${giftImg(g)}<b>${esc(g.ru||g.name)}</b><span class="${g.meters<0?'neg':'pos'}">${g.meters>0?'+':''}${fmt(g.meters)} м</span><span class="muted">${g.coins||0} 💎</span></button>`).join('')
-   +ultra.map(u=>`<button class="tile" data-gift="${esc(u.name)}" title="${esc(u.name)}"><img class="px" src="/mc/item/${u.ic}.png" alt=""><b>${esc(u.name)}</b><span class="${u.c}">${u.label}</span></button>`).join('');
+   +ultra.map(u=>`<button class="tile" data-gift="${esc(u.name)}" title="${esc(u.name)}">${giftImg(u)}<b>${esc(u.name)}</b><span class="${u.c}">${u.label}</span></button>`).join('');
+  $('ultra-icons').innerHTML=ultra.map(u=>`<span class="icon-slot" title="${esc(u.name)}">${giftImg(u)}</span>`).join('');
   $('gift-tiles').querySelectorAll('.tile').forEach(t=>t.onclick=()=>sendGift(t.dataset.gift));
+}
+function ultraList(){
+  return [[cfg.ultraPlusGift,cfg.ultraPlusImage,'Ультра +','pos'],[cfg.ultraMinusGift,cfg.ultraMinusImage,'Ультра −','neg']]
+    .map(([n,img,l,c])=>({name:(n||'').split(',')[0].trim(),image:img||'',label:l,c})).filter(u=>u.name);
 }
 function mobMatches(m,q){return !q||m.names.join(' ').toLowerCase().includes(q)||m.ru.toLowerCase().includes(q)||m.id.includes(q);}
 function renderMobTiles(){
@@ -666,7 +731,7 @@ function renderMobs(){
    return `<tr><td><div class="icon-slot"><img class="px" src="/mc/item/${m.id}_spawn_egg.png" alt="" onerror="this.style.visibility='hidden'"></div></td>
    <td><label class="tg"><input type="checkbox" ${s.enabled?'checked':''} onchange="cfg.mobs['${m.id}'].enabled=this.checked;save();renderMobTiles()" aria-label="Включить"></label></td>
    <td><b>${esc(m.ru)}</b> <span class="muted small">${m.id}</span></td>
-   <td class="role ${m.helper?'green':'red'}">${m.helper?'помогает':'мешает'}</td>
+   <td class="${m.helper?'pos':'neg'}">${m.helper?'помогает':'мешает'}</td>
    <td><input type="number" class="${m.helper?'pos':'neg'}" value="${s.meters}" onchange="cfg.mobs['${m.id}'].meters=Number(this.value);save()"></td>
    <td><input type="number" step="0.1" value="${s.power}" onchange="cfg.mobs['${m.id}'].power=Number(this.value);save()"></td>
    <td class="small muted">${esc(m.names.slice(0,5).join(', '))}</td>
@@ -674,19 +739,104 @@ function renderMobs(){
 }
 function renderVols(){
   const v=[['volMaster','Общая'],['volEngine','Двигатель'],['volRoad','Дорога и ветер'],['volImpacts','Удары'],['volMobs','Мобы'],['volGifts','Подарки'],['volVictory','Победа и ультра']];
-  $('vols').innerHTML=v.map(([k,n])=>`<div class="sl"><label>${n}</label><input type="range" min="0" max="1" step="0.05" data-k="${k}"><output data-for="${k}" data-fmt="pct"></output></div>`).join('');
+  $('vols').innerHTML=v.map(([k,n])=>`<div class="r"><div class="l"><b>${n}</b></div><div class="c"><div class="range"><input type="range" min="0" max="1" step="0.05" data-k="${k}" aria-label="${n}"><output data-for="${k}" data-fmt="pct"></output></div></div></div>`).join('');
 }
 
-const WEATHER={CLEAR:['ясно','glowstone_dust'],RAIN:['дождь','water_bucket'],THUNDER:['гроза','trident']};
+
+// ---- Редактор интерфейса: блоки приходят из игры уже на своих местах, здесь только двигаем их.
+const HUD_NAMES={counter:'Счётчик метров',toast:'Последнее событие',likes:'Лайки до награды',wins:'Победы',test:'Плашка TEST',queue:'Очередь',card:'Подсказки',banner:'Баннер подарка',feed:'Лента событий',top:'Топ помощников',bubble:'Реплики Стива и Алекс'};
+let uiSel='counter', uiDrag=null, uiRects={}, uiHold={}, uiBoxes={};
+const uiClamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+function hudEl(id){if(!cfg.hudLayout)cfg.hudLayout={};return cfg.hudLayout[id]||(cfg.hudLayout[id]={x:0,y:0,scale:1,opacity:1,visible:true});}
+function uiInit(){
+  const stage=$('stage');
+  Object.keys(HUD_NAMES).forEach(id=>{
+    hudEl(id);
+    const b=document.createElement('div');b.className='hb absent';b.dataset.id=id;b.innerHTML='<span>'+HUD_NAMES[id]+'</span><i></i>';
+    b.addEventListener('pointerdown',e=>uiDown(e,id));stage.appendChild(b);uiBoxes[id]=b;
+  });
+  stage.addEventListener('pointermove',uiMove);stage.addEventListener('pointerup',uiUp);stage.addEventListener('pointercancel',uiUp);
+  stage.addEventListener('keydown',e=>{
+    const d={ArrowLeft:[-1,0],ArrowRight:[1,0],ArrowUp:[0,-1],ArrowDown:[0,1]}[e.key];if(!d)return;e.preventDefault();
+    const el=hudEl(uiSel),k=e.shiftKey?1:0.25;el.x=uiClamp(el.x+d[0]*k,-100,100);el.y=uiClamp(el.y+d[1]*k,-100,100);uiSync();save();
+  });
+  $('ui-zones').checked=store.get('rttt.zones')==='1';$('ui-zones').onchange=e=>{store.set('rttt.zones',e.target.checked?'1':'0');stage.classList.toggle('zones',e.target.checked);};
+  stage.classList.toggle('zones',$('ui-zones').checked);
+  const bindSl=(id,key)=>{$(id).oninput=()=>{hudEl(uiSel)[key]=Number($(id).value);uiSync();save();};};
+  bindSl('ui-x','x');bindSl('ui-y','y');bindSl('ui-scale','scale');bindSl('ui-opacity','opacity');
+  $('ui-visible').onchange=e=>{hudEl(uiSel).visible=e.target.checked;uiSync();save();};
+  uiSelect(store.get('rttt.uisel')||'counter');
+}
+function uiSelect(id){if(!HUD_NAMES[id])id='counter';uiSel=id;store.set('rttt.uisel',id);uiSync();}
+function uiSync(){
+  const el=hudEl(uiSel);
+  $('ui-name').textContent=HUD_NAMES[uiSel];$('ui-visible').checked=el.visible!==false;
+  [['ui-x','x',v=>(v>0?'+':'')+Number(v).toFixed(1)+'%'],['ui-y','y',v=>(v>0?'+':'')+Number(v).toFixed(1)+'%'],['ui-scale','scale',v=>'×'+Number(v).toFixed(2)],['ui-opacity','opacity',v=>Math.round(v*100)+'%']]
+    .forEach(([id,k,f])=>{if(document.activeElement!==$(id))$(id).value=el[k];$(id+'-o').textContent=f(el[k]);});
+  $('ui-list').innerHTML=Object.keys(HUD_NAMES).map(id=>{const e=hudEl(id);const moved=e.x||e.y||e.scale!==1||e.opacity!==1;
+    return `<div class="r ${id===uiSel?'on':''}" data-id="${id}"><div class="l"><b>${HUD_NAMES[id]}</b>${moved?'<small>изменён</small>':''}</div><label class="tg"><input type="checkbox" ${e.visible!==false?'checked':''} data-vis="${id}" aria-label="Показывать: ${HUD_NAMES[id]}"></label></div>`;}).join('');
+  $('ui-list').querySelectorAll('.r').forEach(o=>o.onclick=e=>{if(e.target.closest('.tg'))return;uiSelect(o.dataset.id);});
+  $('ui-list').querySelectorAll('[data-vis]').forEach(c=>c.onchange=()=>{hudEl(c.dataset.vis).visible=c.checked;uiSync();save();});
+  Object.keys(uiBoxes).forEach(id=>{uiBoxes[id].classList.toggle('sel',id===uiSel);uiBoxes[id].classList.toggle('off',hudEl(id).visible===false);});
+}
+function uiPlace(id,r){const b=uiBoxes[id];b.style.left=(r.x*100)+'%';b.style.top=(r.y*100)+'%';b.style.width=(r.w*100)+'%';b.style.height=(r.h*100)+'%';}
+function uiStatus(s){
+  const stage=$('stage');if(!stage||!cfg)return;const h=s.hud;
+  const live=!!(h&&h.fresh&&s.active&&!s.entering);
+  stage.classList.toggle('idle',!live);
+  if(h&&h.width>0&&h.height>0)stage.style.setProperty('--ar',(h.width/h.height).toFixed(4));
+  if(currentTab==='ui'&&s.active)api('/api/action',{action:'hudEdit',selected:uiSel}).catch(()=>{});
+  if(!live){$('ui-status').textContent='';return;}
+  h.items.forEach(it=>{
+    const b=uiBoxes[it.id];if(!b)return;
+    if(it.x<0||it.w<=0){b.classList.add('absent');delete uiRects[it.id];return;}
+    b.classList.remove('absent');
+    if((uiDrag&&uiDrag.id===it.id)||Date.now()<(uiHold[it.id]||0))return;
+    uiRects[it.id]=it;uiPlace(it.id,it);
+  });
+  $('ui-status').textContent='Кадр игры: '+h.width+'×'+h.height+'. Блок не выходит за край экрана — игра сама удержит его в кадре.';
+}
+function uiDown(e,id){
+  uiSelect(id);const r=uiRects[id];if(!r)return;e.preventDefault();$('stage').focus();
+  const el=hudEl(id);const box=$('stage').getBoundingClientRect();
+  uiDrag={id,mode:e.target.tagName==='I'?'size':'move',sx:e.clientX,sy:e.clientY,x0:el.x,y0:el.y,s0:el.scale,r:{x:r.x,y:r.y,w:r.w,h:r.h},bw:box.width,bh:box.height};
+  uiBoxes[id].classList.add('dragging');$('stage').setPointerCapture(e.pointerId);
+}
+function uiMove(e){
+  const d=uiDrag;if(!d)return;const el=hudEl(d.id),stage=$('stage');
+  const dx=(e.clientX-d.sx)/d.bw,dy=(e.clientY-d.sy)/d.bh;
+  if(d.mode==='move'){
+    let nx=uiClamp(d.r.x+dx,0,1-d.r.w),ny=uiClamp(d.r.y+dy,0,1-d.r.h);
+    const snap=$('ui-snap').checked&&Math.abs(nx+d.r.w/2-0.5)<0.012;if(snap)nx=0.5-d.r.w/2;
+    stage.classList.toggle('snap',snap);
+    el.x=uiClamp(d.x0+(nx-d.r.x)*100,-100,100);el.y=uiClamp(d.y0+(ny-d.r.y)*100,-100,100);
+    uiPlace(d.id,{x:nx,y:ny,w:d.r.w,h:d.r.h});
+  }else{
+    const k=uiClamp((d.r.w+dx*2)/d.r.w,0.2,6);el.scale=uiClamp(Math.round(d.s0*k*20)/20,0.4,2.5);
+    const f=el.scale/d.s0,w=d.r.w*f,h=d.r.h*f;
+    uiPlace(d.id,{x:d.r.x+d.r.w/2-w/2,y:d.r.y+d.r.h/2-h/2,w,h});
+  }
+  uiSync();
+}
+function uiUp(){
+  const d=uiDrag;if(!d)return;uiDrag=null;uiBoxes[d.id].classList.remove('dragging');$('stage').classList.remove('snap');
+  uiHold[d.id]=Date.now()+900;save();
+}
+function uiReset(id){Object.assign(hudEl(id),{x:0,y:0,scale:1,opacity:1,visible:true});uiSync();save();toast('Блок возвращён на место');}
+function uiResetAll(){Object.keys(HUD_NAMES).forEach(id=>Object.assign(hudEl(id),{x:0,y:0,scale:1,opacity:1,visible:true}));uiSync();save();toast('Интерфейс сброшен');}
+function uiScaleAll(k){Object.keys(HUD_NAMES).forEach(id=>{hudEl(id).scale=k;});uiSync();save();toast('Размер интерфейса: ×'+k);}
+function uiCenter(){const r=uiRects[uiSel];if(!r)return;const el=hudEl(uiSel);el.x=uiClamp(el.x+(0.5-(r.x+r.w/2))*100,-100,100);uiSync();save();}
+
+const WEATHER={CLEAR:['ясно'],RAIN:['дождь'],THUNDER:['гроза']};
 function syncDemo(){$('demo-warn').hidden=!(cfg&&cfg.demoMode);}
-function tagSet(id,cls,text){const e=$(id);e.className='tag '+cls;e.textContent=text;}
+function tagSet(id,cls,text){const e=$(id);e.className='chip '+cls;e.textContent=text;}
 function setFeed(el,lines){const text=lines.join('\n');if(el.textContent===text)return;const bottom=el.scrollTop+el.clientHeight>=el.scrollHeight-20;el.textContent=text;if(bottom)el.scrollTop=el.scrollHeight;}
 function showBridge(b,s){
   const busy=!!b&&['starting','installing','stopping'].includes(b.state),running=!!b?.running;
   $('bridge-start').disabled=bridgePending||busy||running;
   $('bridge-stop').disabled=bridgePending||!b||b.state==='stopping'||(!running&&!busy);
   $('bridge-status').textContent=b?.message||'Мост не запущен.';
-  $('bridge-status').className='small '+(b?.state==='error'?'red':running?'green':'muted');
+  $('bridge-status').className='note '+(b?.state==='error'?'neg':running?'pos':'');
   setFeed($('bridge-log'),b?.logs?.length?b.logs:['Здесь появятся сообщения моста.']);
   const dot=$('conn-dot'),title=$('conn-title');
   if(!s.testMode){dot.className='dot ok';title.textContent='Подключено к LIVE';}
@@ -708,24 +858,31 @@ async function poll(){
     const d=$('dist');d.textContent=fmt(s.distance)+' м';d.classList.toggle('neg',s.distance<0);
     const p=Math.max(0,Math.min(1,s.distance/(s.goal||999999)));$('bar').style.width=(p*100).toFixed(2)+'%';$('pct').textContent=(p*100).toFixed(1)+'%';$('goal').textContent=fmt(s.goal||999999);
     $('wins').textContent=s.wins;$('runs').textContent=s.runs;$('speed').textContent=s.speed;$('qm').textContent=s.mobQueue;$('qg').textContent=s.rewardQueue;
-    const w=WEATHER[s.weather]||[s.weather,'glowstone_dust'];$('weather').textContent=w[0];$('wicon').src='/mc/item/'+w[1]+'.png';
-    tagSet('mode',s.testMode?'test':'live',s.testMode?'тестовый режим':'LIVE');
+    const w=WEATHER[s.weather]||[s.weather];$('weather').textContent='Сейчас: '+w[0];
+    document.querySelectorAll('[data-weather]').forEach(b=>b.classList.toggle('on',b.dataset.weather===s.weather));
+    tagSet('mode',s.testMode?'test':'on',s.testMode?'тестовый режим':'LIVE');
     tagSet('game',s.active?'on':'off',s.active?(s.entering?'загрузка':'игра идёт'):'игра стоит');
     $('livestatus').textContent=s.liveStatus||'';
-    showBridge(s.bridge,s);showCapture(s.capture);syncDemo();
+    showBridge(s.bridge,s);showCapture(s.capture);syncDemo();uiStatus(s);
     if(!timePending&&s.timeOfDay&&cfg.timeOfDay!==s.timeOfDay){cfg.timeOfDay=s.timeOfDay;syncTime();}
     setFeed($('log'),s.log);setFeed($('feed'),s.log.slice(-40));
     const top=s.topHelpers||[];
-    $('top-list').innerHTML=top.length?top.map((t,i)=>`<div class="opt" style="padding:6px 0"><div class="lbl"><b>${['🥇','🥈','🥉'][i]||''} ${esc(t.user)}</b></div><span class="pos">+${fmt(t.meters)} м</span></div>`).join(''):'Пока никого — топ появится после первых подарков.';
+    const MEDAL=['#ffc83a','#c9d2dc','#d08a4e'];
+    $('top-list').innerHTML=top.length?top.map((t,i)=>`<div class="r"><div class="l"><b><span class="medal" style="background:${MEDAL[i]||'#888'}">${i+1}</span>${esc(t.user)}</b></div><span class="pos">+${fmt(t.meters)} м</span></div>`).join(''):'<p class="note">Появится после первых подарков.</p>';
     $('quiet-status').textContent=cfg.quietChat?(s.quietSeconds>=(cfg.quietSeconds||120)?'В чате тихо '+Math.round(s.quietSeconds/60)+' мин — Стив и Алекс развлекают зрителей.':'Последнее событие от зрителей: '+s.quietSeconds+' с назад.'):'';
-    $('unknown').innerHTML=s.unknownGifts.length?s.unknownGifts.map(u=>`<div><span>${esc(u)}</span><button class="btn sm" data-add="${esc(u.split(' (id')[0].split(' — ')[0])}">в таблицу</button></div>`).join(''):'Пока все подарки знакомые.';
+    $('unknown').innerHTML=s.unknownGifts.length?s.unknownGifts.map(u=>`<div><span>${esc(u)}</span><button class="btn sm" data-add="${esc(u.split(' (id')[0].split(' — ')[0])}">в таблицу</button></div>`).join(''):'<div><span class="muted">Незнакомых подарков пока не было.</span></div>';
     $('unknown').querySelectorAll('[data-add]').forEach(b=>b.onclick=()=>addGift(b.dataset.add));
   }catch(e){tagSet('game','off','нет связи с игрой');}finally{polling=false;}
 }
+// Меню настроек: подсвечивает раздел, до которого прокручена страница.
+document.querySelectorAll('#set-menu a').forEach(a=>a.onclick=e=>{e.preventDefault();document.querySelector(a.getAttribute('href')).scrollIntoView({behavior:'smooth',block:'start'});});
+window.addEventListener('scroll',()=>{if(currentTab!=='settings')return;let cur=null;
+  document.querySelectorAll('#p-settings .card[id]').forEach(c=>{if(c.getBoundingClientRect().top<160)cur=c.id;});
+  if(!cur)cur='s-run';document.querySelectorAll('#set-menu a').forEach(a=>a.classList.toggle('on',a.getAttribute('href')==='#'+cur));},{passive:true});
 (async()=>{cfg=await api('/api/config');meta=await api('/api/meta');
   renderVols();bind();renderGifts();renderGiftTiles();renderMobs();renderMobTiles();
   document.querySelector('#mobfilter .btn').click();
-  async function refresh(){await poll();setTimeout(refresh,1000);}refresh();
+  async function refresh(){await poll();setTimeout(refresh,currentTab==='ui'?350:1000);}refresh();
 })().catch(e=>{showError(e);tagSet('game','off','нет связи с игрой');});
 </script>
 </body>

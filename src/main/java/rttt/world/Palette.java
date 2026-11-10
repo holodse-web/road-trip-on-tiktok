@@ -4,8 +4,11 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 
 public final class Palette {
-    public enum Tree { OAK, BIRCH, POPLAR, SPRUCE, ACACIA, JUNGLE, CHERRY, DARK_OAK, PALE_OAK, CACTUS, MUSHROOM, GIANT_SPRUCE, ICE_SPIKE, SWAMP_OAK, BAMBOO, PALM, BOULDER, NONE }
-    public enum House { OAK, SPRUCE, ACACIA, SANDSTONE, JUNGLE, CHERRY, TERRACOTTA, BIRCH, DARK_OAK, PALE_OAK, POPLAR, MUSHROOM, IGLOO }
+    public enum Tree { OAK, BIRCH, POPLAR, SPRUCE, ACACIA, JUNGLE, CHERRY, DARK_OAK, PALE_OAK, CACTUS, MUSHROOM, GIANT_SPRUCE, ICE_SPIKE, SWAMP_OAK, BAMBOO, PALM, BOULDER,
+        MANGROVE, AZALEA, CRIMSON, WARPED, CHORUS, OBSIDIAN_PILLAR, FOSSIL, BASALT_PILLAR, SCULK_PILLAR, DEAD, NONE }
+    public enum House { OAK, SPRUCE, ACACIA, SANDSTONE, JUNGLE, CHERRY, TERRACOTTA, BIRCH, DARK_OAK, PALE_OAK, POPLAR, MUSHROOM, IGLOO, MANGROVE, DEEPSLATE, CRIMSON, WARPED, BLACKSTONE, PURPUR }
+    /** Set pieces that appear beside the road, a few per biome. */
+    public enum Landmark { WELL, CAMP, LIGHTHOUSE, SNOWMEN, PYRAMID, TEMPLE, WITCH_HUT, TORII, STONEHENGE, GRAVES, BEES, PUMPKINS, TRESTLE, END_TOWER, BASTION, SCULK_GATE, HAYSTACKS, TOTEMS, ICE_ARCH }
 
     public Block surface = Blocks.GRASS_BLOCK;
     public Block sub = Blocks.DIRT;
@@ -24,6 +27,15 @@ public final class Palette {
     public double floraDensity = 0.5;
     public int peakLine = 38;
     public boolean bareMountain = false;
+    /** Chance of a pond per 64 blocks of road, what fills it and what lies on its bed. */
+    public double pond = 0;
+    public Block pondFluid = Blocks.WATER;
+    public Block pondBed = Blocks.GRAVEL;
+    public boolean lilies = false, reeds = false;
+    public Landmark[] landmarks = {};
+    /** Small things dropped along the verge. */
+    public Block[] props = {};
+    public double propDensity = 0.05;
 
     private static Palette p() { return new Palette(); }
 
@@ -172,12 +184,121 @@ public final class Palette {
                 a.flowers = new Block[]{Blocks.PALE_MOSS_CARPET, Blocks.PALE_MOSS_CARPET, Blocks.CLOSED_EYEBLOSSOM, Blocks.OPEN_EYEBLOSSOM, Blocks.SHORT_GRASS};
                 a.floraDensity = 0.5; a.house = House.PALE_OAK; a.road = Blocks.POLISHED_DEEPSLATE; a.roadSlab = Blocks.POLISHED_DEEPSLATE_SLAB;
             }
+            case "minecraft:mangrove_swamp" -> {
+                a.tree = Tree.MANGROVE; a.treeDensity = 0.6; a.surface = Blocks.MUD; a.sub = Blocks.MUD; a.mountainTop = Blocks.MOSS_BLOCK;
+                a.flowers = new Block[]{Blocks.MOSS_CARPET, Blocks.SHORT_GRASS, Blocks.FERN, Blocks.MANGROVE_PROPAGULE, Blocks.MOSS_CARPET, Blocks.FIREFLY_BUSH};
+                a.floraDensity = 0.45; a.house = House.MANGROVE; a.road = Blocks.PACKED_MUD; a.roadSlab = Blocks.MUD_BRICK_SLAB; a.peakLine = 999;
+            }
+            case "minecraft:lush_caves" -> {
+                a.tree = Tree.AZALEA; a.tree2 = Tree.BOULDER; a.treeDensity = 0.5; a.surface = Blocks.MOSS_BLOCK; a.sub = Blocks.CLAY; a.mountainTop = Blocks.MOSS_BLOCK;
+                a.flowers = new Block[]{Blocks.MOSS_CARPET, Blocks.AZALEA, Blocks.FLOWERING_AZALEA, Blocks.SHORT_GRASS, Blocks.MOSS_CARPET, Blocks.BIG_DRIPLEAF,
+                        Blocks.SMALL_DRIPLEAF, Blocks.TALL_GRASS};
+                a.floraDensity = 0.8; a.house = House.JUNGLE; a.road = Blocks.MOSSY_STONE_BRICKS; a.roadSlab = Blocks.MOSSY_STONE_BRICK_SLAB; a.peakLine = 999;
+            }
+            case "minecraft:frozen_peaks" -> {
+                a.tree = Tree.BOULDER; a.tree2 = Tree.ICE_SPIKE; a.treeDensity = 0.1; a.snowy = true; a.surface = Blocks.SNOW_BLOCK; a.mountainTop = Blocks.SNOW_BLOCK;
+                a.mountain = Blocks.STONE; a.peak = Blocks.PACKED_ICE; a.flowers = new Block[]{Blocks.SHORT_GRASS}; a.floraDensity = 0.02; a.house = House.IGLOO;
+                a.road = Blocks.POLISHED_DIORITE; a.roadSlab = Blocks.POLISHED_DIORITE_SLAB; a.peakLine = 2; a.bareMountain = true;
+            }
+            case "minecraft:deep_dark" -> {
+                a.tree = Tree.SCULK_PILLAR; a.treeDensity = 0.22; a.surface = Blocks.SCULK; a.sub = Blocks.DEEPSLATE; a.mountain = Blocks.DEEPSLATE;
+                a.mountainTop = Blocks.SCULK; a.peak = Blocks.DEEPSLATE; a.flowers = new Block[]{Blocks.SCULK_SENSOR}; a.floraDensity = 0.012;
+                a.house = House.DEEPSLATE; a.road = Blocks.DEEPSLATE_TILES; a.roadSlab = Blocks.DEEPSLATE_TILE_SLAB; a.peakLine = 30; a.bareMountain = true;
+            }
+            case "minecraft:crimson_forest" -> {
+                a.tree = Tree.CRIMSON; a.treeDensity = 0.6; a.surface = Blocks.CRIMSON_NYLIUM; a.sub = Blocks.NETHERRACK; a.mountain = Blocks.NETHERRACK;
+                a.mountainTop = Blocks.CRIMSON_NYLIUM; a.peak = Blocks.NETHER_WART_BLOCK; a.peakLine = 34;
+                a.flowers = new Block[]{Blocks.CRIMSON_ROOTS, Blocks.CRIMSON_ROOTS, Blocks.CRIMSON_FUNGUS}; a.floraDensity = 0.5; a.house = House.CRIMSON;
+                a.road = Blocks.RED_NETHER_BRICKS; a.roadSlab = Blocks.RED_NETHER_BRICK_SLAB;
+            }
+            case "minecraft:warped_forest" -> {
+                a.tree = Tree.WARPED; a.treeDensity = 0.6; a.surface = Blocks.WARPED_NYLIUM; a.sub = Blocks.NETHERRACK; a.mountain = Blocks.NETHERRACK;
+                a.mountainTop = Blocks.WARPED_NYLIUM; a.peak = Blocks.WARPED_WART_BLOCK; a.peakLine = 34;
+                a.flowers = new Block[]{Blocks.WARPED_ROOTS, Blocks.NETHER_SPROUTS, Blocks.WARPED_ROOTS, Blocks.WARPED_FUNGUS, Blocks.NETHER_SPROUTS};
+                a.floraDensity = 0.55; a.house = House.WARPED; a.road = Blocks.POLISHED_BLACKSTONE_BRICKS; a.roadSlab = Blocks.POLISHED_BLACKSTONE_BRICK_SLAB;
+            }
+            case "minecraft:soul_sand_valley" -> {
+                a.tree = Tree.FOSSIL; a.tree2 = Tree.BASALT_PILLAR; a.treeDensity = 0.16; a.surface = Blocks.SOUL_SAND; a.sub = Blocks.SOUL_SOIL;
+                a.mountain = Blocks.BLACKSTONE; a.mountainTop = Blocks.SOUL_SOIL; a.peak = Blocks.BASALT; a.peakLine = 26; a.bareMountain = true;
+                a.flowers = new Block[]{Blocks.SOUL_FIRE}; a.floraDensity = 0.02; a.house = House.BLACKSTONE;
+                a.road = Blocks.POLISHED_BLACKSTONE; a.roadSlab = Blocks.POLISHED_BLACKSTONE_SLAB;
+            }
+            case "minecraft:end_highlands" -> {
+                a.tree = Tree.CHORUS; a.tree2 = Tree.OBSIDIAN_PILLAR; a.treeDensity = 0.3; a.surface = Blocks.END_STONE; a.sub = Blocks.END_STONE;
+                a.mountain = Blocks.END_STONE; a.mountainTop = Blocks.END_STONE; a.peak = Blocks.END_STONE_BRICKS; a.peakLine = 40; a.bareMountain = true;
+                a.flowers = new Block[]{Blocks.SHORT_GRASS}; a.floraDensity = 0; a.house = House.PURPUR;
+                a.road = Blocks.PURPUR_BLOCK; a.roadSlab = Blocks.PURPUR_SLAB;
+            }
             default -> {
                 a.tree = Tree.OAK; a.tree2 = Tree.BIRCH; a.treeDensity = 0.6; a.flowers = grass; a.floraDensity = 0.55; a.house = House.OAK;
                 a.road = Blocks.COBBLESTONE; a.roadSlab = Blocks.COBBLESTONE_SLAB;
             }
         }
+        extras(a, id);
         return a;
+    }
+
+    /** Ponds, landmarks and roadside clutter: the details that make each stretch recognisable. */
+    private static void extras(Palette a, String id) {
+        switch (id) {
+            case "minecraft:plains" -> { a.pond = 0.3; a.reeds = true; a.landmarks = new Landmark[]{Landmark.WELL, Landmark.HAYSTACKS, Landmark.STONEHENGE};
+                a.props = new Block[]{Blocks.HAY_BLOCK, Blocks.COMPOSTER, Blocks.BARREL, Blocks.OAK_FENCE}; }
+            case "minecraft:sunflower_plains" -> { a.pond = 0.2; a.reeds = true; a.landmarks = new Landmark[]{Landmark.BEES, Landmark.HAYSTACKS};
+                a.props = new Block[]{Blocks.HAY_BLOCK, Blocks.BEEHIVE, Blocks.OAK_FENCE}; }
+            case "minecraft:flower_forest" -> { a.pond = 0.35; a.lilies = true; a.landmarks = new Landmark[]{Landmark.BEES, Landmark.WELL};
+                a.props = new Block[]{Blocks.BEEHIVE, Blocks.FLOWERING_AZALEA, Blocks.OAK_FENCE}; }
+            case "minecraft:birch_forest" -> { a.pond = 0.2; a.landmarks = new Landmark[]{Landmark.CAMP}; a.props = new Block[]{Blocks.BIRCH_FENCE, Blocks.BARREL}; }
+            case "minecraft:forest" -> { a.pond = 0.25; a.lilies = true; a.landmarks = new Landmark[]{Landmark.CAMP, Landmark.WELL};
+                a.props = new Block[]{Blocks.OAK_FENCE, Blocks.BARREL, Blocks.MOSSY_COBBLESTONE}; }
+            case "minecraft:dappled_forest" -> { a.landmarks = new Landmark[]{Landmark.PUMPKINS, Landmark.CAMP};
+                a.props = new Block[]{Blocks.PUMPKIN, Blocks.HAY_BLOCK, Blocks.JACK_O_LANTERN}; a.propDensity = 0.07; }
+            case "minecraft:meadow" -> { a.pond = 0.3; a.reeds = true; a.landmarks = new Landmark[]{Landmark.BEES, Landmark.STONEHENGE};
+                a.props = new Block[]{Blocks.BEEHIVE, Blocks.HAY_BLOCK}; }
+            case "minecraft:cherry_grove" -> { a.pond = 0.5; a.lilies = true; a.pondBed = Blocks.SAND; a.landmarks = new Landmark[]{Landmark.TORII};
+                a.props = new Block[]{Blocks.CHERRY_FENCE, Blocks.LANTERN}; }
+            case "minecraft:dark_forest" -> { a.landmarks = new Landmark[]{Landmark.GRAVES, Landmark.CAMP};
+                a.props = new Block[]{Blocks.MOSSY_COBBLESTONE, Blocks.COBWEB, Blocks.JACK_O_LANTERN}; }
+            case "minecraft:pale_garden" -> { a.landmarks = new Landmark[]{Landmark.GRAVES}; a.props = new Block[]{Blocks.CREAKING_HEART, Blocks.COBWEB}; a.propDensity = 0.03; }
+            case "minecraft:swamp" -> { a.pond = 0.95; a.lilies = true; a.reeds = true; a.pondBed = Blocks.MUD; a.landmarks = new Landmark[]{Landmark.WITCH_HUT};
+                a.props = new Block[]{Blocks.MUD, Blocks.MOSSY_COBBLESTONE}; }
+            case "minecraft:mangrove_swamp" -> { a.pond = 0.95; a.lilies = true; a.pondBed = Blocks.MUD; a.landmarks = new Landmark[]{Landmark.WITCH_HUT};
+                a.props = new Block[]{Blocks.MANGROVE_ROOTS, Blocks.MUDDY_MANGROVE_ROOTS}; a.propDensity = 0.08; }
+            case "minecraft:sparse_jungle" -> { a.pond = 0.3; a.reeds = true; a.landmarks = new Landmark[]{Landmark.TEMPLE, Landmark.CAMP};
+                a.props = new Block[]{Blocks.MELON, Blocks.MOSSY_COBBLESTONE, Blocks.JUNGLE_FENCE}; }
+            case "minecraft:jungle", "minecraft:bamboo_jungle" -> { a.pond = 0.4; a.lilies = true; a.landmarks = new Landmark[]{Landmark.TEMPLE};
+                a.props = new Block[]{Blocks.MELON, Blocks.MOSSY_COBBLESTONE, Blocks.MOSS_BLOCK}; }
+            case "minecraft:lush_caves" -> { a.pond = 0.8; a.lilies = true; a.pondBed = Blocks.CLAY; a.props = new Block[]{Blocks.MOSS_BLOCK, Blocks.ROOTED_DIRT, Blocks.VERDANT_FROGLIGHT}; }
+            case "minecraft:beach" -> { a.landmarks = new Landmark[]{Landmark.LIGHTHOUSE, Landmark.CAMP}; a.pond = 0.5; a.pondBed = Blocks.SAND;
+                a.props = new Block[]{Blocks.BARREL, Blocks.SANDSTONE_WALL, Blocks.DEAD_BRAIN_CORAL_BLOCK}; }
+            case "minecraft:savanna" -> { a.pond = 0.15; a.landmarks = new Landmark[]{Landmark.TOTEMS, Landmark.WELL};
+                a.props = new Block[]{Blocks.HAY_BLOCK, Blocks.ACACIA_FENCE, Blocks.COARSE_DIRT}; a.tree2 = Tree.DEAD; }
+            case "minecraft:desert" -> { a.pond = 0.25; a.pondBed = Blocks.SAND; a.reeds = true; a.landmarks = new Landmark[]{Landmark.PYRAMID, Landmark.WELL};
+                a.props = new Block[]{Blocks.BONE_BLOCK, Blocks.CHISELED_SANDSTONE, Blocks.SANDSTONE_WALL}; a.propDensity = 0.03; a.tree2 = Tree.DEAD; }
+            case "minecraft:badlands" -> { a.landmarks = new Landmark[]{Landmark.TRESTLE}; a.props = new Block[]{Blocks.BARREL, Blocks.BONE_BLOCK, Blocks.RAW_GOLD_BLOCK};
+                a.propDensity = 0.03; a.tree2 = Tree.DEAD; }
+            case "minecraft:wooded_badlands" -> { a.landmarks = new Landmark[]{Landmark.TRESTLE, Landmark.CAMP}; a.props = new Block[]{Blocks.BARREL, Blocks.COARSE_DIRT}; }
+            case "minecraft:windswept_hills" -> { a.pond = 0.2; a.landmarks = new Landmark[]{Landmark.STONEHENGE, Landmark.CAMP};
+                a.props = new Block[]{Blocks.COBBLESTONE_WALL, Blocks.MOSSY_COBBLESTONE, Blocks.ANDESITE}; a.propDensity = 0.08; }
+            case "minecraft:taiga", "minecraft:old_growth_spruce_taiga" -> { a.pond = 0.25; a.landmarks = new Landmark[]{Landmark.CAMP};
+                a.props = new Block[]{Blocks.SPRUCE_FENCE, Blocks.BARREL, Blocks.MOSSY_COBBLESTONE, Blocks.CAMPFIRE}; }
+            case "minecraft:snowy_taiga" -> { a.pond = 0.3; a.pondFluid = Blocks.ICE; a.landmarks = new Landmark[]{Landmark.SNOWMEN, Landmark.CAMP};
+                a.props = new Block[]{Blocks.SPRUCE_FENCE, Blocks.SNOW_BLOCK}; }
+            case "minecraft:snowy_plains" -> { a.pond = 0.5; a.pondFluid = Blocks.ICE; a.landmarks = new Landmark[]{Landmark.SNOWMEN}; a.props = new Block[]{Blocks.SNOW_BLOCK, Blocks.PACKED_ICE}; }
+            case "minecraft:ice_spikes" -> { a.pond = 0.5; a.pondFluid = Blocks.ICE; a.landmarks = new Landmark[]{Landmark.ICE_ARCH}; a.props = new Block[]{Blocks.PACKED_ICE, Blocks.BLUE_ICE}; }
+            case "minecraft:frozen_peaks" -> { a.pond = 0.7; a.pondFluid = Blocks.ICE; a.landmarks = new Landmark[]{Landmark.ICE_ARCH, Landmark.SNOWMEN};
+                a.props = new Block[]{Blocks.PACKED_ICE, Blocks.COBBLESTONE_WALL}; }
+            case "minecraft:mushroom_fields" -> { a.pond = 0.3; a.props = new Block[]{Blocks.RED_MUSHROOM_BLOCK, Blocks.BROWN_MUSHROOM_BLOCK, Blocks.MUSHROOM_STEM}; }
+            case "minecraft:deep_dark" -> { a.landmarks = new Landmark[]{Landmark.SCULK_GATE}; a.props = new Block[]{Blocks.SCULK_CATALYST, Blocks.SOUL_LANTERN, Blocks.DEEPSLATE_BRICK_WALL};
+                a.propDensity = 0.04; }
+            case "minecraft:crimson_forest" -> { a.pond = 0.45; a.pondFluid = Blocks.LAVA; a.pondBed = Blocks.NETHERRACK; a.landmarks = new Landmark[]{Landmark.BASTION};
+                a.props = new Block[]{Blocks.SHROOMLIGHT, Blocks.NETHER_WART_BLOCK, Blocks.NETHER_GOLD_ORE}; }
+            case "minecraft:warped_forest" -> { a.landmarks = new Landmark[]{Landmark.BASTION}; a.props = new Block[]{Blocks.SHROOMLIGHT, Blocks.WARPED_WART_BLOCK, Blocks.CRYING_OBSIDIAN}; }
+            case "minecraft:soul_sand_valley" -> { a.pond = 0.35; a.pondFluid = Blocks.LAVA; a.pondBed = Blocks.BLACKSTONE; a.landmarks = new Landmark[]{Landmark.BASTION};
+                a.props = new Block[]{Blocks.BONE_BLOCK, Blocks.SOUL_LANTERN, Blocks.BASALT}; }
+            case "minecraft:end_highlands" -> { a.landmarks = new Landmark[]{Landmark.END_TOWER}; a.props = new Block[]{Blocks.END_ROD, Blocks.PURPUR_PILLAR, Blocks.OBSIDIAN}; a.propDensity = 0.03; }
+            default -> {
+            }
+        }
     }
 
     public static Palette at(int x, int z) {

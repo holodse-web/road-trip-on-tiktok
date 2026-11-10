@@ -1,9 +1,9 @@
 {
   "schemaVersion": 1,
   "id": "rttt",
-  "version": "1.0.0-beta.1",
+  "version": "1.1",
   "name": "Road Trip on TikTok",
-  "description": "Autonomous TikTok LIVE game: Steve and Alex drive home on an endless road; viewers help and hurt them with likes, gifts and mobs from chat.",
+  "description": "Игра для TikTok LIVE: Стив и Алекс едут по бесконечной дороге, а зрители помогают или мешают лайками, подарками и мобами из чата.",
   "authors": [
     "holod"
   ],

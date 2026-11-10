@@ -26,7 +26,78 @@ public final class Scenery {
         return z >= ROAD_Z0 && z <= ROAD_Z1;
     }
 
+    /** Top solid block of the column, ponds included. */
     public static int groundTop(int x, int z) {
+        int g = baseGround(x, z);
+        Pond p = pondAt(x, z);
+        if (p == null) return g;
+        double e = p.reach(x, z);
+        if (e < 1) return Math.min(g, p.level - 1 - (int) Math.round(2 * (1 - e)));
+        // The rim is never lower than the surface, so the pond cannot spill.
+        return e < 1.6 ? Math.max(g, p.level) : g;
+    }
+
+    /** Surface level of the pond over this column, or {@code Integer.MIN_VALUE} on dry land. */
+    public static int pondSurface(int x, int z) {
+        Pond p = pondAt(x, z);
+        return p != null && p.reach(x, z) < 1 ? p.level : Integer.MIN_VALUE;
+    }
+
+    private static final int POND_CELL = 64;
+    private static final Object NO_POND = new Object();
+    private static final java.util.concurrent.ConcurrentHashMap<Integer, Object> PONDS = new java.util.concurrent.ConcurrentHashMap<>();
+
+    private static final class Pond {
+        final int cx, cz, level;
+        final double rx, rz;
+
+        Pond(int cx, int cz, double rx, double rz, int level) {
+            this.cx = cx;
+            this.cz = cz;
+            this.rx = rx;
+            this.rz = rz;
+            this.level = level;
+        }
+
+        /** 0 at the centre, 1 at the waterline. */
+        double reach(int x, int z) {
+            double dx = (x - cx) / rx, dz = (z - cz) / rz;
+            return Math.sqrt(dx * dx + dz * dz);
+        }
+    }
+
+    private static Pond pondAt(int x, int z) {
+        if (z > -6 || z < -40) return null;
+        int cell = Math.floorDiv(x, POND_CELL);
+        for (int g = cell - 1; g <= cell + 1; g++) {
+            Object o = PONDS.get(g);
+            if (o == null) {
+                o = makePond(g);
+                if (PONDS.size() > 2048) PONDS.clear();
+                PONDS.put(g, o);
+            }
+            if (o != NO_POND && ((Pond) o).reach(x, z) < 1.6) return (Pond) o;
+        }
+        return null;
+    }
+
+    private static Object makePond(int g) {
+        int cx = g * POND_CELL + 16 + (int) (rand(g, 1, 501) * (POND_CELL - 32));
+        int cz = -17 - (int) (rand(g, 2, 501) * 9);
+        if (cx < START_X + 70) return NO_POND;
+        Palette pal = Palette.at(cx, cz);
+        if (rand(g, 0, 501) >= pal.pond) return NO_POND;
+        double rx = 6 + rand(g, 3, 501) * 4, rz = 4 + rand(g, 4, 501) * 2;
+        for (int dx = -14; dx <= 14; dx += 7) if (nearStructure(cx + dx, -12)) return NO_POND;
+        int level = baseGround(cx, cz);
+        for (int i = 0; i < 16; i++) {
+            double a = Math.PI * 2 * i / 16;
+            level = Math.min(level, baseGround(cx + (int) Math.round(Math.cos(a) * rx * 1.3), cz + (int) Math.round(Math.sin(a) * rz * 1.3)));
+        }
+        return new Pond(cx, cz, rx, rz, level);
+    }
+
+    private static int baseGround(int x, int z) {
         if (isRoad(z)) return (roadHalf(x) >> 1) - 1;
         int rf = (int) Math.floor(top(x));
         if (z > ROAD_Z1) {
@@ -56,30 +127,50 @@ public final class Scenery {
     public static void buildChunk(int cx0, int cz0, Sink out) {
         if (cz0 > FRONT_Z || cz0 + 15 < BACK_Z) return;
         int z0 = Math.max(cz0, BACK_Z), z1 = Math.min(cz0 + 15, FRONT_Z);
+        // Every column needs its own height and its neighbours'; sampling the noise once per column
+        // instead of four times is the bulk of the saving when new chunks stream in at speed.
+        Heights heights = new Heights(cx0 - 1, z0 - 1, 18, z1 - z0 + 3);
         for (int x = cx0; x < cx0 + 16; x++) {
             for (int z = z0; z <= z1; z++) {
-                column(x, z, out);
+                column(x, z, out, heights);
             }
         }
         stampObjects(cx0, cz0, out);
     }
 
-    private static BlockState leaves(Block b) {
+    static BlockState leaves(Block b) {
         BlockState s = b.defaultBlockState();
         if (s.hasProperty(BlockStateProperties.PERSISTENT)) s = s.setValue(BlockStateProperties.PERSISTENT, true);
         return s;
     }
 
-    private static void column(int x, int z, Sink out) {
+    private static final class Heights {
+        final int x0, z0, depth;
+        final int[] h;
+
+        Heights(int x0, int z0, int width, int depth) {
+            this.x0 = x0;
+            this.z0 = z0;
+            this.depth = depth;
+            h = new int[width * depth];
+            for (int i = 0; i < width; i++) for (int j = 0; j < depth; j++) h[i * depth + j] = groundTop(x0 + i, z0 + j);
+        }
+
+        int at(int x, int z) {
+            return h[(x - x0) * depth + (z - z0)];
+        }
+    }
+
+    private static void column(int x, int z, Sink out, Heights heights) {
         Palette pal = Palette.at(x, z);
-        int top = groundTop(x, z);
+        int top = heights.at(x, z);
         boolean road = isRoad(z);
         int d = ROAD_Z0 - z;
         int bottom;
         if (z >= FRONT_Z - 2) {
             bottom = BASE_Y - 46;
         } else {
-            int n = Math.min(groundTop(x, z + 1), Math.min(groundTop(x - 1, z), groundTop(x + 1, z)));
+            int n = Math.min(heights.at(x, z + 1), Math.min(heights.at(x - 1, z), heights.at(x + 1, z)));
             bottom = Math.min(top - 1, n - 3);
         }
         int subDepth = 3 + (int) (rand(x, z, 3) * 2);
@@ -125,6 +216,25 @@ public final class Scenery {
 
         double fr = rand(x, z, 17);
         int fy = top + 1;
+        if (z <= -6 && z >= -40) {
+            Pond pond = pondAt(x, z);
+            if (pond != null) {
+                double reach = pond.reach(x, z);
+                if (reach < 1) {
+                    fillPond(x, z, top, pond.level, pal, fr, out);
+                    return;
+                }
+                if (reach < 1.3 && pal.reeds && fr < 0.3 && pal.pondFluid == Blocks.WATER && top == pond.level) {
+                    int h = 1 + (int) (rand(x, z, 31) * 3);
+                    for (int i = 0; i < h; i++) out.set(x, fy + i, z, Blocks.SUGAR_CANE.defaultBlockState());
+                    return;
+                }
+            }
+        }
+        if (!mountain && (z == ROAD_Z0 - 3 || z == ROAD_Z0 - 4) && pal.props.length > 0 && rand(x, z, 37) < pal.propDensity && !nearStructure(x, z)) {
+            placeProp(x, fy, z, pal.props[(int) (rand(x, z, 39) * pal.props.length)], out);
+            return;
+        }
         if (pal.snowy && !mountain) {
             if (pal.surface != Blocks.SNOW_BLOCK) out.set(x, fy, z, Blocks.SNOW.defaultBlockState());
             if (fr < pal.floraDensity * 0.5 && z > -40) placeFlora(x, fy, z, pal, out);
@@ -139,6 +249,33 @@ public final class Scenery {
         if (z > ROAD_Z1) dens *= 0.7;
         if (z == ROAD_Z1 + 1 || z == ROAD_Z0 - 1) dens *= 0.4;
         if (fr < dens) placeFlora(x, fy, z, pal, out);
+    }
+
+    private static void fillPond(int x, int z, int top, int level, Palette pal, double fr, Sink out) {
+        out.set(x, top, z, pal.pondBed.defaultBlockState());
+        boolean ice = pal.pondFluid == Blocks.ICE;
+        for (int y = top + 1; y <= level; y++) {
+            Block b = ice ? (y == level ? Blocks.ICE : Blocks.WATER) : pal.pondFluid;
+            out.set(x, y, z, b.defaultBlockState());
+        }
+        if (pal.lilies && pal.pondFluid == Blocks.WATER && fr < 0.14) out.set(x, level + 1, z, Blocks.LILY_PAD.defaultBlockState());
+        else if (pal.snowy && ice && fr < 0.12) out.set(x, level + 1, z, Blocks.SNOW.defaultBlockState());
+    }
+
+    private static void placeProp(int x, int y, int z, Block b, Sink out) {
+        BlockState s = b.defaultBlockState();
+        if (s.hasProperty(BlockStateProperties.HORIZONTAL_FACING)) s = s.setValue(BlockStateProperties.HORIZONTAL_FACING, Direction.SOUTH);
+        if (b == Blocks.LANTERN || b == Blocks.SOUL_LANTERN || b == Blocks.END_ROD || b == Blocks.COBWEB || b == Blocks.SHROOMLIGHT || b == Blocks.VERDANT_FROGLIGHT) {
+            // Lights sit on a short post so they read as lamps, not as litter.
+            Block post = b == Blocks.END_ROD ? Blocks.PURPUR_PILLAR : b == Blocks.SOUL_LANTERN ? Blocks.DEEPSLATE_BRICK_WALL : Blocks.COBBLESTONE_WALL;
+            if (b != Blocks.COBWEB && b != Blocks.SHROOMLIGHT && b != Blocks.VERDANT_FROGLIGHT) {
+                out.set(x, y, z, post.defaultBlockState());
+                y++;
+            }
+        }
+        out.set(x, y, z, s);
+        if ((b == Blocks.HAY_BLOCK || b == Blocks.PUMPKIN || b == Blocks.SNOW_BLOCK || b == Blocks.PACKED_ICE || b == Blocks.BASALT || b == Blocks.BONE_BLOCK)
+                && rand(x, z, 41) < 0.35) out.set(x, y + 1, z, s);
     }
 
     private static void placeFlora(int x, int y, int z, Palette pal, Sink out) {
@@ -305,7 +442,7 @@ public final class Scenery {
         }
     }
 
-    private static void put(Sink out, int x, int y, int z, BlockState s) {
+    static void put(Sink out, int x, int y, int z, BlockState s) {
         if (out.contains(x, z)) out.set(x, y, z, s);
     }
 
@@ -322,6 +459,8 @@ public final class Scenery {
                 double dens = pal.treeDensity * (tz < -18 ? 0.75 : 1.0) * (tz < -40 ? 0.6 : 1.0);
                 if (rand(gx, gz, 203) >= dens) continue;
                 if (nearStructure(tx, tz)) continue;
+                Pond pond = pondAt(tx, tz);
+                if (pond != null && pond.reach(tx, tz) < (pal.tree == Palette.Tree.MANGROVE ? 0.85 : 1.25)) continue;
                 Palette.Tree t = (pal.tree2 != Palette.Tree.NONE && rand(gx, gz, 204) < 0.35) ? pal.tree2 : pal.tree;
                 int ty = groundTop(tx, tz) + 1;
                 long seed = hash(tx, tz, 205);
@@ -336,9 +475,10 @@ public final class Scenery {
             Palette pal = Palette.at(px, pz);
             int y = groundTop(px, pz) + 1;
             Block fence = fenceFor(pal);
+            boolean eerie = pal.house == Palette.House.DEEPSLATE || pal.house == Palette.House.BLACKSTONE || pal.house == Palette.House.WARPED;
             put(out, px, y, pz, fence.defaultBlockState());
             put(out, px, y + 1, pz, fence.defaultBlockState());
-            put(out, px, y + 2, pz, Blocks.LANTERN.defaultBlockState());
+            put(out, px, y + 2, pz, (pal.house == Palette.House.PURPUR ? Blocks.END_ROD : eerie ? Blocks.SOUL_LANTERN : Blocks.LANTERN).defaultBlockState());
         }
         int seg = 168;
         for (int s = Math.floorDiv(x0 - 20, seg); s <= Math.floorDiv(x1 + 20, seg); s++) {
@@ -348,10 +488,12 @@ public final class Scenery {
             int az = -12;
             Palette pal = Palette.at(ax, az);
             double kind = rand(s, 2, 301);
-            if (kind < 0.62) house(out, pal.house, ax, az, hash(s, 3, 301));
-            else if (kind < 0.78 && pal.tree == Palette.Tree.OAK) windmill(out, ax, az);
-            else if (kind < 0.9 && !pal.snowy && pal.surface == Blocks.GRASS_BLOCK) farm(out, ax, az, hash(s, 4, 301));
-            else if (kind < 0.95) ruinedPortal(out, ax, az);
+            Palette.Landmark mark = pal.landmarks.length == 0 ? null : pal.landmarks[(int) (rand(s, 5, 301) * pal.landmarks.length)];
+            if (kind < 0.38) house(out, pal.house, ax, az, hash(s, 3, 301));
+            else if (kind < 0.74 && mark != null) Landmarks.build(out, mark, pal, ax, az, hash(s, 6, 301));
+            else if (kind < 0.84 && pal.tree == Palette.Tree.OAK) windmill(out, ax, az);
+            else if (kind < 0.93 && !pal.snowy && pal.surface == Blocks.GRASS_BLOCK) farm(out, ax, az, hash(s, 4, 301));
+            else if (kind < 0.97) ruinedPortal(out, ax, az);
             else house(out, pal.house, ax, az, hash(s, 3, 301));
         }
         int cseg = 700;
@@ -385,15 +527,21 @@ public final class Scenery {
             case PALE_OAK: return Blocks.PALE_OAK_FENCE;
             case SANDSTONE: case TERRACOTTA: return Blocks.SANDSTONE_WALL;
             case POPLAR: return Blocks.POPLAR_FENCE;
+            case MANGROVE: return Blocks.MANGROVE_FENCE;
+            case DEEPSLATE: return Blocks.DEEPSLATE_BRICK_WALL;
+            case CRIMSON: return Blocks.CRIMSON_FENCE;
+            case WARPED: return Blocks.WARPED_FENCE;
+            case BLACKSTONE: return Blocks.BLACKSTONE_WALL;
+            case PURPUR: return Blocks.END_STONE_BRICK_WALL;
             default: return Blocks.OAK_FENCE;
         }
     }
 
-    private static double r(long seed, int k) {
+    static double r(long seed, int k) {
         return (mix(seed + k * 0x9E3779B97F4A7C15L) >>> 11) * 0x1.0p-53;
     }
 
-    private static void blob(Sink out, int cx, int cy, int cz, double rx, double ry, double rz, BlockState s, long seed) {
+    static void blob(Sink out, int cx, int cy, int cz, double rx, double ry, double rz, BlockState s, long seed) {
         int ix = (int) Math.ceil(rx), iy = (int) Math.ceil(ry), iz = (int) Math.ceil(rz);
         for (int dx = -ix; dx <= ix; dx++)
             for (int dy = -iy; dy <= iy; dy++)
@@ -405,7 +553,7 @@ public final class Scenery {
                 }
     }
 
-    private static void trunk(Sink out, int x, int y, int z, int h, BlockState log) {
+    static void trunk(Sink out, int x, int y, int z, int h, BlockState log) {
         for (int i = 0; i < h; i++) put(out, x, y + i, z, log);
     }
 
@@ -607,6 +755,131 @@ public final class Scenery {
                 }
                 break;
             }
+            case MANGROVE: {
+                int h = 5 + (int) (r(seed, 1) * 3);
+                BlockState roots = Blocks.MANGROVE_ROOTS.defaultBlockState(), log = Blocks.MANGROVE_LOG.defaultBlockState();
+                int lift = 2 + (int) (r(seed, 2) * 2);
+                int[][] legs = {{1, 0}, {-1, 0}, {0, 1}, {0, -1}};
+                for (int[] d : legs) {
+                    for (int i = 0; i < lift; i++) put(out, x + d[0] * (i < lift - 1 ? 2 : 1), y - 1 + i, z + d[1] * (i < lift - 1 ? 2 : 1), roots);
+                    put(out, x + d[0], y + lift - 1, z + d[1], roots);
+                }
+                trunk(out, x, y + lift, z, h, log);
+                blob(out, x, y + lift + h, z, 3.2, 2.0, 3.2, leaves(Blocks.MANGROVE_LEAVES), seed);
+                blob(out, x + (r(seed, 3) < 0.5 ? 2 : -2), y + lift + h - 2, z, 1.8, 1.2, 1.8, leaves(Blocks.MANGROVE_LEAVES), seed + 5);
+                break;
+            }
+            case AZALEA: {
+                int h = 3 + (int) (r(seed, 1) * 2);
+                int lean = r(seed, 2) < 0.5 ? -1 : 1;
+                BlockState log = Blocks.OAK_LOG.defaultBlockState();
+                trunk(out, x, y, z, h, log);
+                put(out, x + lean, y + h, z, log);
+                blob(out, x + lean, y + h + 1, z, 3.0, 1.3, 3.0, leaves(Blocks.AZALEA_LEAVES), seed);
+                blob(out, x + lean, y + h + 2, z, 1.8, 1.0, 1.8, leaves(Blocks.FLOWERING_AZALEA_LEAVES), seed + 3);
+                put(out, x, y - 1, z, Blocks.ROOTED_DIRT.defaultBlockState());
+                break;
+            }
+            case CRIMSON: case WARPED: {
+                boolean crimson = t == Palette.Tree.CRIMSON;
+                int h = 5 + (int) (r(seed, 1) * 6);
+                BlockState stem = (crimson ? Blocks.CRIMSON_STEM : Blocks.WARPED_STEM).defaultBlockState();
+                BlockState wart = (crimson ? Blocks.NETHER_WART_BLOCK : Blocks.WARPED_WART_BLOCK).defaultBlockState();
+                BlockState glow = Blocks.SHROOMLIGHT.defaultBlockState();
+                int rad = h > 8 ? 3 : 2;
+                for (int dy = 0; dy <= 3; dy++) {
+                    int rr = dy == 3 ? rad - 1 : rad;
+                    for (int dx = -rr; dx <= rr; dx++)
+                        for (int dz = -rr; dz <= rr; dz++) {
+                            boolean corner = Math.abs(dx) == rr && Math.abs(dz) == rr;
+                            if (corner && (dy == 3 || rr > 1)) continue;
+                            boolean rim = Math.abs(dx) == rr || Math.abs(dz) == rr;
+                            if (dy == 0 && !(rim && r(seed, dx * 13 + dz * 7) < 0.55)) continue;
+                            put(out, x + dx, y + h - 2 + dy, z + dz, r(seed, 100 + dx * 17 + dz * 5 + dy) < 0.09 ? glow : wart);
+                        }
+                }
+                trunk(out, x, y, z, h, stem);
+                break;
+            }
+            case CHORUS: {
+                int h = 3 + (int) (r(seed, 1) * 3);
+                BlockState up = Blocks.CHORUS_PLANT.defaultBlockState().setValue(BlockStateProperties.UP, true).setValue(BlockStateProperties.DOWN, true);
+                trunk(out, x, y, z, h, up);
+                int arms = 2 + (int) (r(seed, 2) * 2);
+                int[][] dirs = {{1, 0}, {-1, 0}, {0, 1}, {0, -1}};
+                for (int k = 0; k < arms; k++) {
+                    int[] d = dirs[(k + (int) (r(seed, 3) * 4)) % 4];
+                    int ay = y + h - 1 - (k % 2);
+                    BlockState side = Blocks.CHORUS_PLANT.defaultBlockState()
+                            .setValue(d[0] != 0 ? BlockStateProperties.EAST : BlockStateProperties.SOUTH, true)
+                            .setValue(d[0] != 0 ? BlockStateProperties.WEST : BlockStateProperties.NORTH, true).setValue(BlockStateProperties.UP, true);
+                    put(out, x + d[0], ay, z + d[1], side);
+                    int ah = 1 + (int) (r(seed, 10 + k) * 3);
+                    for (int i = 1; i <= ah; i++) put(out, x + d[0], ay + i, z + d[1], up);
+                    put(out, x + d[0], ay + ah + 1, z + d[1], Blocks.CHORUS_FLOWER.defaultBlockState());
+                }
+                put(out, x, y + h, z, Blocks.CHORUS_FLOWER.defaultBlockState());
+                break;
+            }
+            case OBSIDIAN_PILLAR: {
+                int h = 7 + (int) (r(seed, 1) * 12);
+                int rad = r(seed, 2) < 0.4 ? 2 : 1;
+                BlockState ob = Blocks.OBSIDIAN.defaultBlockState();
+                for (int i = -2; i < h; i++)
+                    for (int dx = -rad; dx <= rad; dx++)
+                        for (int dz = -rad; dz <= rad; dz++) {
+                            if (rad > 1 && Math.abs(dx) == rad && Math.abs(dz) == rad) continue;
+                            put(out, x + dx, y + i, z + dz, i == h - 1 && r(seed, dx * 7 + dz) < 0.3 ? Blocks.CRYING_OBSIDIAN.defaultBlockState() : ob);
+                        }
+                put(out, x, y + h, z, Blocks.BEDROCK.defaultBlockState());
+                put(out, x, y + h + 1, z, Blocks.END_ROD.defaultBlockState());
+                break;
+            }
+            case FOSSIL: {
+                int len = 5 + (int) (r(seed, 1) * 4);
+                BlockState spine = Blocks.BONE_BLOCK.defaultBlockState().setValue(BlockStateProperties.AXIS, Direction.Axis.X);
+                BlockState rib = Blocks.BONE_BLOCK.defaultBlockState();
+                for (int i = 0; i < len; i++) {
+                    put(out, x + i, y + 3, z, spine);
+                    if (i % 2 == 0) {
+                        for (int side = -1; side <= 1; side += 2) {
+                            put(out, x + i, y + 3, z + side, rib.setValue(BlockStateProperties.AXIS, Direction.Axis.Z));
+                            for (int dy = 0; dy <= 2; dy++) put(out, x + i, y + dy, z + side * 2, rib);
+                        }
+                    }
+                }
+                break;
+            }
+            case BASALT_PILLAR: {
+                BlockState basalt = Blocks.BASALT.defaultBlockState();
+                int n = 2 + (int) (r(seed, 1) * 4);
+                for (int k = 0; k < n; k++) {
+                    int bx = x + (int) Math.round((r(seed, 5 + k) - 0.5) * 3), bz = z + (int) Math.round((r(seed, 15 + k) - 0.5) * 3);
+                    trunk(out, bx, y - 1, bz, 3 + (int) (r(seed, 25 + k) * 9), basalt);
+                }
+                break;
+            }
+            case SCULK_PILLAR: {
+                int h = 3 + (int) (r(seed, 1) * 5);
+                boolean broken = r(seed, 2) < 0.4;
+                BlockState brick = Blocks.DEEPSLATE_BRICKS.defaultBlockState(), cracked = Blocks.CRACKED_DEEPSLATE_BRICKS.defaultBlockState();
+                for (int i = 0; i < h; i++) put(out, x, y + i, z, r(seed, 10 + i) < 0.3 ? cracked : brick);
+                put(out, x, y + h, z, broken ? Blocks.SCULK.defaultBlockState() : Blocks.CHISELED_DEEPSLATE.defaultBlockState());
+                if (!broken) put(out, x, y + h + 1, z, Blocks.SOUL_LANTERN.defaultBlockState());
+                for (int dx = -1; dx <= 1; dx++) for (int dz = -1; dz <= 1; dz++)
+                    if ((dx != 0 || dz != 0) && r(seed, 30 + dx * 3 + dz) < 0.5) put(out, x + dx, y, z + dz, Blocks.SCULK.defaultBlockState());
+                break;
+            }
+            case DEAD: {
+                int h = 3 + (int) (r(seed, 1) * 3);
+                BlockState log = Blocks.STRIPPED_OAK_LOG.defaultBlockState();
+                trunk(out, x, y, z, h, log);
+                int dir = r(seed, 2) < 0.5 ? -1 : 1;
+                put(out, x + dir, y + h - 1, z, log.setValue(BlockStateProperties.AXIS, Direction.Axis.X));
+                put(out, x + dir * 2, y + h, z, log);
+                if (r(seed, 3) < 0.5) put(out, x - dir, y + h - 2, z, log.setValue(BlockStateProperties.AXIS, Direction.Axis.X));
+                break;
+            }
             default:
                 break;
         }
@@ -630,6 +903,12 @@ public final class Scenery {
             case POPLAR: planks = Blocks.POPLAR_PLANKS; log = Blocks.POPLAR_LOG; stairs = Blocks.POPLAR_STAIRS; slab = Blocks.POPLAR_SLAB; door = Blocks.POPLAR_DOOR; break;
             case SANDSTONE: planks = Blocks.SANDSTONE; log = Blocks.CUT_SANDSTONE; stairs = Blocks.SANDSTONE_STAIRS; slab = Blocks.SMOOTH_SANDSTONE_SLAB; door = Blocks.JUNGLE_DOOR; break;
             case TERRACOTTA: planks = Blocks.TERRACOTTA; log = Blocks.DARK_OAK_LOG; stairs = Blocks.RED_SANDSTONE_STAIRS; slab = Blocks.SMOOTH_RED_SANDSTONE_SLAB; door = Blocks.DARK_OAK_DOOR; break;
+            case MANGROVE: planks = Blocks.MANGROVE_PLANKS; log = Blocks.MANGROVE_LOG; stairs = Blocks.MANGROVE_STAIRS; slab = Blocks.MANGROVE_SLAB; door = Blocks.MANGROVE_DOOR; break;
+            case DEEPSLATE: planks = Blocks.DEEPSLATE_BRICKS; log = Blocks.POLISHED_DEEPSLATE; stairs = Blocks.DEEPSLATE_BRICK_STAIRS; slab = Blocks.DEEPSLATE_BRICK_SLAB; door = Blocks.DARK_OAK_DOOR; break;
+            case CRIMSON: planks = Blocks.CRIMSON_PLANKS; log = Blocks.CRIMSON_STEM; stairs = Blocks.CRIMSON_STAIRS; slab = Blocks.CRIMSON_SLAB; door = Blocks.CRIMSON_DOOR; break;
+            case WARPED: planks = Blocks.WARPED_PLANKS; log = Blocks.WARPED_STEM; stairs = Blocks.WARPED_STAIRS; slab = Blocks.WARPED_SLAB; door = Blocks.WARPED_DOOR; break;
+            case BLACKSTONE: planks = Blocks.POLISHED_BLACKSTONE_BRICKS; log = Blocks.BLACKSTONE; stairs = Blocks.BLACKSTONE_STAIRS; slab = Blocks.BLACKSTONE_SLAB; door = Blocks.CRIMSON_DOOR; break;
+            case PURPUR: planks = Blocks.PURPUR_BLOCK; log = Blocks.PURPUR_PILLAR; stairs = Blocks.PURPUR_STAIRS; slab = Blocks.PURPUR_SLAB; door = Blocks.BIRCH_DOOR; break;
             case MUSHROOM: planks = Blocks.MUSHROOM_STEM; log = Blocks.MUSHROOM_STEM; stairs = Blocks.DARK_OAK_STAIRS; slab = Blocks.DARK_OAK_SLAB; door = Blocks.DARK_OAK_DOOR; break;
             default: planks = Blocks.OAK_PLANKS; log = Blocks.OAK_LOG; stairs = Blocks.OAK_STAIRS; slab = Blocks.OAK_SLAB; door = Blocks.OAK_DOOR; break;
         }
@@ -638,18 +917,26 @@ public final class Scenery {
         m.stairs = stairs.defaultBlockState();
         m.slab = slab.defaultBlockState();
         m.door = door.defaultBlockState();
-        m.glass = Blocks.GLASS_PANE.defaultBlockState();
-        m.foundation = Blocks.COBBLESTONE.defaultBlockState();
+        m.glass = (h == Palette.House.PURPUR ? Blocks.STAINED_GLASS_PANE.magenta() : Blocks.GLASS_PANE).defaultBlockState();
+        Block base = switch (h) {
+            case DEEPSLATE -> Blocks.COBBLED_DEEPSLATE;
+            case CRIMSON, WARPED -> Blocks.NETHER_BRICKS;
+            case BLACKSTONE -> Blocks.BLACKSTONE;
+            case PURPUR -> Blocks.END_STONE_BRICKS;
+            case SANDSTONE -> Blocks.SANDSTONE;
+            default -> Blocks.COBBLESTONE;
+        };
+        m.foundation = base.defaultBlockState();
         return m;
     }
 
-    private static int footprintBase(int x0, int x1, int z0, int z1) {
+    static int footprintBase(int x0, int x1, int z0, int z1) {
         int max = Integer.MIN_VALUE;
         for (int x = x0; x <= x1; x++) for (int z = z0; z <= z1; z++) max = Math.max(max, groundTop(x, z));
         return max + 1;
     }
 
-    private static void foundation(Sink out, int x0, int x1, int z0, int z1, int y0, BlockState f) {
+    static void foundation(Sink out, int x0, int x1, int z0, int z1, int y0, BlockState f) {
         for (int x = x0; x <= x1; x++)
             for (int z = z0; z <= z1; z++)
                 for (int y = groundTop(x, z) + 1; y < y0; y++) put(out, x, y, z, f);
@@ -706,7 +993,8 @@ public final class Scenery {
         }
         int cx = x1 - 1;
         for (int y = y0 + wh + 1; y <= y0 + wh + half + 1; y++) put(out, cx, y, z0 + 1, Blocks.BRICKS.defaultBlockState());
-        for (int x = x0; x <= x1; x++) {
+        boolean garden = kind.ordinal() <= Palette.House.POPLAR.ordinal() && kind != Palette.House.SANDSTONE && kind != Palette.House.TERRACOTTA;
+        for (int x = x0; garden && x <= x1; x++) {
             if (x == dx || x == dx + 1) continue;
             if (r(seed, 40 + x) < 0.5) put(out, x, groundTop(x, z1 + 2) + 1, z1 + 2,
                     (r(seed, 60 + x) < 0.5 ? Blocks.POPPY : Blocks.DANDELION).defaultBlockState());

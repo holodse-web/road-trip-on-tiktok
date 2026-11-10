@@ -74,6 +74,7 @@ public final class Game {
     public int victoryTicks = 0;
     public boolean defeat = false;
     public final Host host = new Host();
+    public final Feed feed = new Feed();
     private final Map<String, Long> helped = new java.util.concurrent.ConcurrentHashMap<>();
     private final Map<String, Map<String, Long>> hordeVotes = new HashMap<>();
     private final Map<String, Long> hordeCooldown = new HashMap<>();
@@ -214,10 +215,12 @@ public final class Game {
         if (savedPauseOnLostFocus == null) savedPauseOnLostFocus = mc.options.pauseOnLostFocus;
         mc.options.pauseOnLostFocus = false;
         try {
+            // The scenery is a strip 110 blocks deep, so the view only has to reach its far edge.
+            int want = Math.max(8, Math.min(12, (int) Math.ceil((Math.max(6, cfg.cameraDistance) + 110) / 16.0) + 1));
             int rd = mc.options.renderDistance().get();
-            if (rd != 10) {
+            if (rd != want) {
                 if (savedRenderDistance == null) savedRenderDistance = rd;
-                mc.options.renderDistance().set(10);
+                mc.options.renderDistance().set(want);
             }
             int sd = mc.options.simulationDistance().get();
             if (sd > 5) {
@@ -241,7 +244,9 @@ public final class Game {
         log("▶ Игра запущена");
         runOnGameThread(() -> {
             helped.clear();
+            topDirty = true;
             host.clear();
+            feed.clear();
             lastViewerEvent = System.currentTimeMillis();
             lastQuietAction = 0;
             lastMilestone = (long) Math.max(0, Math.floor(state.distance / 100_000.0));
@@ -424,6 +429,7 @@ public final class Game {
         }
 
         car.cruise = cfg.cruiseSpeed;
+        car.minSpeed = Track.rampAhead(car.x) ? Math.max(17, cfg.cruiseSpeed + 4) : 0;
         double oldX = car.x;
         car.tick();
         if (victoryTicks == 0) {
@@ -746,18 +752,44 @@ public final class Game {
             fx.carRepaint(rgb);
             sfx.play(Sfx.Bus.GIFT, "block.amethyst_block.chime", 0.9f, 1.2f, 100);
         });
-        setLastChange(0, e.user, "новый цвет машины — " + what + " · " + e.user, null);
+        post(Feed.Kind.SOCIAL, 0, e.user, what + " — новый цвет машины", "", null, null);
         host.say(Host.Who.ALEX, 2, 3200, Host.nick(e.user) + ", спасибо! Новый цвет!", "Thanks, " + Host.nick(e.user) + "! New paint!");
         log("🎨 " + e.user + ": " + what + " → новый цвет машины" + (e.test ? " [тест]" : ""));
     }
 
+    private static final String[] RANDOM_WORDS = {"рандом моб", "рандомный моб", "рандомного моба", "рандом моба", "случайный моб",
+            "случайного моба", "random mob", "randommob", "рандоммоб", "rnd mob", "рандом", "random"};
+
+    private boolean wantsRandomMob(String text) {
+        String n = " " + MobCatalog.normalize(text) + " ";
+        for (String w : RANDOM_WORDS) {
+            String k = " " + w + " ";
+            if (cfg.chatMatchInsideMessage ? n.contains(k) : n.trim().equals(w)) return true;
+        }
+        return false;
+    }
+
+    private MobCatalog.Entry randomMob() {
+        List<MobCatalog.Entry> pool = new ArrayList<>();
+        for (MobCatalog.Entry e : MobCatalog.BY_ID.values()) {
+            Config.MobSetting s = cfg.mobs.get(e.id);
+            if (s != null && !s.enabled) continue;
+            pool.add(e);
+        }
+        if (pool.isEmpty()) return null;
+        MobCatalog.Entry pick = pool.get(rnd.nextInt(pool.size()));
+        for (int i = 0; i < 3 && pick.size == MobCatalog.Size.BOSS && rnd.nextDouble() < 0.75; i++) pick = pool.get(rnd.nextInt(pool.size()));
+        return pick;
+    }
+
     private void onChat(LiveEvent e) {
-        MobCatalog.Entry m = MobCatalog.match(e.text, cfg.chatMatchInsideMessage);
+        boolean random = wantsRandomMob(e.text);
+        MobCatalog.Entry m = random ? randomMob() : MobCatalog.match(e.text, cfg.chatMatchInsideMessage);
         if (m == null) return;
         Config.MobSetting s = cfg.mobs.get(m.id);
         if (s != null && !s.enabled) return;
         long now = System.currentTimeMillis();
-        if (hordeVote(m, e.user, now, e.test)) return;
+        if (!random && hordeVote(m, e.user, now, e.test)) return;
         if (!e.test) {
             Long last = lastChat.get(e.user);
             if (last != null && now - last < cfg.chatCooldownSeconds * 1000L) return;
@@ -768,7 +800,7 @@ public final class Game {
         if (lastChat.size() > 5000) lastChat.clear();
         pendingByUser.merge(e.user, 1, Integer::sum);
         mobQueue.add(new MobReq(m, e.user, e.test));
-        log("🧟 " + e.user + " → " + m.ru + (e.test ? " [тест]" : ""));
+        log((random ? "🎲 " + e.user + " → случайный моб: " : "🧟 " + e.user + " → ") + m.ru + (e.test ? " [тест]" : ""));
     }
 
     private void credit(String user, long meters) {
@@ -777,16 +809,30 @@ public final class Game {
         if (u.equals("дорога") || u.equals("орда") || u.equals("команда") || u.startsWith("demo_")) return;
         helped.merge(u, meters, Long::sum);
         if (helped.size() > 5000) helped.clear();
+        topDirty = true;
     }
 
+    private volatile List<Map.Entry<String, Long>> topCache = List.of();
+    private volatile boolean topDirty = true;
+
+    /** The leaders change only when someone is credited, so the sorted list is cached between changes. */
     public List<Map.Entry<String, Long>> topHelpers(int n) {
-        List<Map.Entry<String, Long>> list = new ArrayList<>(helped.entrySet());
-        list.sort((a, b) -> Long.compare(b.getValue(), a.getValue()));
-        return list.size() > n ? new ArrayList<>(list.subList(0, n)) : list;
+        if (topDirty) {
+            topDirty = false;
+            List<Map.Entry<String, Long>> list = new ArrayList<>(helped.size());
+            for (Map.Entry<String, Long> e : helped.entrySet()) list.add(Map.entry(e.getKey(), e.getValue()));
+            list.sort((a, b) -> Long.compare(b.getValue(), a.getValue()));
+            topCache = list.size() > 8 ? List.copyOf(list.subList(0, 8)) : List.copyOf(list);
+        }
+        List<Map.Entry<String, Long>> top = topCache;
+        return top.size() > n ? top.subList(0, n) : top;
     }
 
     public void resetTop() {
-        runOnGameThread(helped::clear);
+        runOnGameThread(() -> {
+            helped.clear();
+            topDirty = true;
+        });
     }
 
     private boolean hordeVote(MobCatalog.Entry m, String user, long now, boolean test) {
@@ -806,7 +852,7 @@ public final class Game {
         for (int i = 0; i < n; i++) mobQueue.addFirst(new MobReq(m, "орда", test));
         hordeTicks = 20 * 30;
         String what = boss ? m.ru : m.ru + " ×" + n;
-        setLastChange(0, "", "ОРДА · HORDE: " + what + " — " + cfg.hordeViewers + " зрителей");
+        post(Feed.Kind.HORDE, 0, cfg.hordeViewers + " зрителей", "ОРДА · HORDE: " + what, "", null, m.id);
         host.say(Host.Who.STEVE, 4, 4200, boss ? "Вы вызвали " + m.ru + " вместе?!" : "Это целая орда! " + what + "!",
                 boss ? "You summoned it together?!" : "It's a horde! " + mobEn(m) + " ×" + n + "!");
         sfx.play(Sfx.Bus.MOB, "event.raid.horn", 0.9f, 1f, 0);
@@ -971,19 +1017,34 @@ public final class Game {
 
     private void applyNow(Reward r) {
         addMeters(r.meters());
-        setLastChange(r.meters(), r.user(), r.label(), r.gift());
         double st = strength(r.feel());
         String eff = r.effect() == null ? "" : r.effect().toUpperCase(Locale.ROOT);
+        announce(r, eff);
         if (r.meters() > 0 && !"лайки".equals(r.label())) credit(r.user(), r.meters());
         hostOnReward(r, eff);
         if (r.meters() > 0) {
             boolean ultra = eff.equals("ULTRA_PLUS");
             boolean big = ultra || eff.equals("NITRO") || r.feel() >= 2000;
-            if (big) {
-                double speed = ultra ? 40 : Math.min(38, 24 + Math.max(0, st - 1.0) * 22);
-                double secs = ultra ? 7.5 : Math.min(7, 3 + Math.max(0, st - 1.0) * 5);
+            boolean huge = ultra || r.feel() >= 10000;
+            if (huge) {
+                // 10 000 m and up: the car is flung far forward, the mirror image of a big minus gift.
+                double power = ultra ? 2.6 : Math.max(1, Math.min(2.3, 1 + (st - 1.3) * 2));
+                car.rocket(power);
+                fx.rocket(power);
+                fx.nitro(1.4 + 1.1 * power);
+                cam.addTrauma(Math.min(1, 0.45 + power * 0.2));
+                fx.flash(0xFFE7A8, (float) Math.min(0.75, 0.35 + power * 0.15));
+                sfx.rev(1.2);
+                sfx.play(Sfx.Bus.GIFT, "entity.firework_rocket.launch", 1f, 0.6f, 200);
+                sfx.play(Sfx.Bus.GIFT, "entity.firework_rocket.large_blast", 1f, 0.7f, 200);
+                sfx.play(Sfx.Bus.GIFT, "entity.breeze.wind_burst", 0.9f, 0.6f, 300);
+                sfx.play(Sfx.Bus.IMPACT, "entity.generic.explode", 0.55f, 1.4f, 300);
+                fx.positive(ultra ? "ULTRA_PLUS" : (eff.equals("NITRO") ? "TOTEM" : eff), st);
+            } else if (big) {
+                double speed = Math.min(38, 26 + Math.max(0, st - 1.0) * 24);
+                double secs = Math.min(7, 3 + Math.max(0, st - 1.0) * 5);
                 car.nitro(speed, secs);
-                car.launch(ultra ? 2.2 : Math.min(1.2, 0.2 + (st - 1.0) * 0.8));
+                car.launch(Math.min(1.4, 0.35 + (st - 1.0) * 0.9));
                 fx.nitro(secs);
                 if (ultra) {
                     fx.flash(0xFFF3C0, 0.6f);
@@ -1021,7 +1082,7 @@ public final class Game {
         long meters = s != null ? Math.abs(s.meters) : e.size.meters;
         double power = s != null ? s.power : 0.8;
         state.distance += meters;
-        setLastChange(meters, user, e.ru, null);
+        post(Feed.Kind.MOB_HELP, meters, user, e.ru, "толкает · push", null, e.id);
         credit(user, meters);
         if (!car.inBigMotion()) car.push(power, 1.0 + power);
         double st = strength(meters);
@@ -1036,7 +1097,7 @@ public final class Game {
         double power = s != null ? s.power : e.size.power;
         meters = Math.round(meters * cfg.mobPenaltyMultiplier);
         state.distance -= meters;
-        setLastChange(-meters, user, e.ru);
+        post(Feed.Kind.MOB_HURT, -meters, user, e.ru, "", null, e.id);
         car.knockBack(power, 0.4 + upBias * 0.5, power >= 2.0);
         double st = strength(meters);
         sfx.play(Sfx.Bus.IMPACT, "entity.zombie.attack_iron_door", (float) Math.min(1, 0.4 + st * 0.3), 0.9f + rnd.nextFloat() * 0.2f, 80);
@@ -1093,15 +1154,58 @@ public final class Game {
     }
 
     private void setLastChange(long amount, String user, String label) {
-        setLastChange(amount, user, label, null);
+        post(amount == 0 ? Feed.Kind.SYSTEM : Feed.Kind.OTHER, amount, user, label, "", null, null);
     }
 
-    private void setLastChange(long amount, String user, String label, String gift) {
+    /** Records an event for the on-screen cards and for the passengers' reactions. */
+    private Feed.Item post(Feed.Kind kind, long amount, String user, String title, String note, String gift, String mob) {
         lastChangeGift = gift;
         lastChangeAmount = amount;
         lastChangeUser = user == null ? "" : user;
-        lastChangeLabel = label == null ? "" : label;
+        lastChangeLabel = title == null ? "" : title;
         lastChangeTime = System.currentTimeMillis();
+        return feed.post(kind, amount, user, title, note, gift, mob);
+    }
+
+    /** Russian name of a configured gift, falling back to the name TikTok sent. */
+    private String giftTitle(String gift, String fallback) {
+        if (gift != null) {
+            String key = giftKey(gift);
+            for (Config.GiftRule rule : cfg.gifts) {
+                if (rule != null && rule.name != null && giftKey(rule.name).equals(key)) {
+                    return rule.ru != null && !rule.ru.isBlank() ? rule.ru : rule.name;
+                }
+            }
+        }
+        return fallback;
+    }
+
+    private void announce(Reward r, String eff) {
+        String label = r.label() == null ? "" : r.label();
+        boolean likes = "лайки".equals(label) || label.startsWith("лайки ");
+        Feed.Kind kind = r.gift() != null ? Feed.Kind.GIFT : likes ? Feed.Kind.LIKE : Feed.Kind.OTHER;
+        int cut = label.lastIndexOf(" ×");
+        String count = cut >= 0 ? label.substring(cut) : "";
+        String base = cut >= 0 ? label.substring(0, cut) : label;
+        String title = kind == Feed.Kind.GIFT ? giftTitle(r.gift(), base) + count : likes ? "Лайки" : label;
+        int t = tier(r);
+        String note = "";
+        if (eff.equals("ULTRA_PLUS")) note = "УЛЬТРА · РАКЕТА ВПЕРЁД";
+        else if (eff.equals("ULTRA_MINUS")) note = "УЛЬТРА · УЛЁТ НАЗАД";
+        else if (r.meters() > 0 && r.feel() >= 10000) note = "БРОСОК ВПЕРЁД · LAUNCH";
+        else if (r.meters() > 0 && (eff.equals("NITRO") || r.feel() >= 2000)) note = "НИТРО · NITRO";
+        else if (r.meters() <= -10000) note = "ОТБРОС НАЗАД · BLAST";
+        else if (r.meters() > 0) note = "вперёд · forward";
+        else note = "назад · back";
+        Feed.Item item = post(kind, r.meters(), r.user(), title, note, r.gift(), null);
+        if (cfg.giftBanner && kind == Feed.Kind.GIFT && t >= 3) {
+            double seconds = Math.max(2.6, spotlightSeconds(t) * Math.max(0.1, cfg.giftSpotlightScale));
+            feed.spotlight(item, item.time + (long) (seconds * 1000));
+        }
+    }
+
+    public long likeProgress() {
+        return likeAccum;
     }
 
     private void checkVictory() {

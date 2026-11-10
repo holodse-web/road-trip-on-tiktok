@@ -97,6 +97,15 @@ public final class MobDirector {
         public boolean isBoss() {
             return e.size == MobCatalog.Size.BOSS;
         }
+
+        public boolean isHelper() {
+            return e.helper;
+        }
+
+        /** True once the mob has already struck the car and is just leaving. */
+        public boolean isSpent() {
+            return hit;
+        }
     }
 
     private static final class Temp {

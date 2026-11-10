@@ -130,6 +130,8 @@ public final class PanelServer {
                     JsonObject status = game.status();
                     status.add("bridge", bridge.status());
                     status.add("capture", CaptureWindow.status());
+                    status.add("hud", rttt.client.hud.Hud.layoutStatus());
+                    status.addProperty("likeProgress", game.likeProgress());
                     json(ex, status);
                 }
                 case "/api/config" -> {
@@ -335,6 +337,7 @@ public final class PanelServer {
             case "resetStats" -> game.submit(new LiveEvent(LiveEvent.Type.RESET_STATS, "панель", true));
             case "reconnect" -> live.reconnect();
             case "resetTop" -> game.resetTop();
+            case "hudEdit" -> rttt.client.hud.Hud.editing(s(b, "selected", ""));
             case "bridgeStart" -> {
                 String username = BridgeProcess.normalizeUsername(s(b, "username", game.cfg.liveUsername));
                 bridge.start(username);
